@@ -1,0 +1,17 @@
+using my.distribuicao as my from '../../db/distribuicao-Schema';
+
+service distribuicaoServico {
+    entity Entrega            as projection on my.Entrega;
+
+    entity Veiculo            as projection on my.Veiculo;
+
+    entity CentroDistribuicao as projection on my.CentroDistribuicao;
+
+    action realizarEntrega(pedidoID : UUID, cepDestino : String, numero: String) returns {
+        success : Boolean;
+        message : String;
+    };
+
+    
+
+}
