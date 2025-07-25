@@ -13,7 +13,7 @@ async function rotaORS(start, end) {
       [end.lon  , end.lat  ]
     ],
     radiuses: [300, 300],
-    instructions: false
+    instructions: true
   };
 
   const { data } = await axios.post(url, body, {
@@ -26,7 +26,8 @@ async function rotaORS(start, end) {
 
   return {
     distanceKm: Math.round(route.summary.distance / 1000),
-    geometry  : route.geometry
+    geometry  : route.geometry,
+    steps     : route.segments?.[0]?.steps || []
   };
 }
 
@@ -40,9 +41,12 @@ async function rotaMapbox(start, end) {
   const route = data.routes?.[0];
   if (!route) throw new Error("Mapbox não retornou rota");
 
+  console.log("data",data)
+
   return {
     distanceKm: Math.round(route.distance / 1000),
-    geometry  : route.geometry         // encoded polyline
+    geometry  : route.geometry,         // polyline
+    steps     : route.legs?.[0]?.steps || []
   };
 }
 

@@ -1,0 +1,35 @@
+<mvc:View
+    controllerName="distribuicao.controller.ViewConsultarEntrega"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+
+    <Page id="pageConsultar" title="Consultar Entrega" showHeader="true">
+        <content>
+
+            <!-- campo para digitar o código de rastreio -->
+            <Input
+                id="inputCodigo"
+                placeholder="Código de rastreio (ex.: R123456)"
+                width="15rem" />
+
+            <!-- botão que dispara a action -->
+            <Button
+                id="btnConsultar"
+                text="Buscar entrega"
+                press=".onBotaoPress"
+                type="Emphasized"
+                class="sapUiTinyMarginTop"/>
+
+            <!-- mapa -->
+            <VBox id="vboxMap" class="sapUiSmallMarginTop">
+                <Text id = "visualizacaorota" text="Visualização da Rota:" />
+                <core:HTML
+                    id="mapContainerEntrega"
+                    content="&lt;div id='mapConsulta' style='height:400px;width:100%'&gt;&lt;/div&gt;" />
+            </VBox>
+
+        </content>
+    </Page>
+</mvc:View>

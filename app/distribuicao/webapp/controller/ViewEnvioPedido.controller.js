@@ -23,7 +23,7 @@ sap.ui.define([
           const oAction = oModel.bindContext("/realizarEntrega(...)")
             .setParameter("pedidoID",  pedidoID)
             .setParameter("cepDestino", cepDestino)
-            .setParameter("numero", numero); // 👈 adiciona isso
+            .setParameter("numero", numero); // adiciona isso
 
 
           await oAction.execute();
@@ -67,6 +67,12 @@ sap.ui.define([
         }).addTo(this._leafletMap);
       
         L.polyline(latlngs, { color: "blue" }).addTo(this._leafletMap);
+      },
+
+      onIrParaConsultar: function () {
+        this.getOwnerComponent()
+            .getRouter()
+            .navTo("RouteViewConsultarEntrega");   
       }
     });
   });
