@@ -1,30 +1,65 @@
 <mvc:View
-    controllerName="distribuicao.controller.ViewEnvioPedido"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m"
-    xmlns:core="sap.ui.core"
-    displayBlock="true">
-    <Page id="page" title="{i18n>title}" showHeader="true">
+  controllerName="distribuicao.controller.ViewEnvioPedido"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  displayBlock="true">
+
+  <Page id="pageEnvio" title="{i18n>title}" showHeader="true">
+
+    <!-- Botão para mudar de view -->
     <Button
-    id = "botaotela"
-    text="Consultar Entrega"
-    type="Transparent"
-    press=".onIrParaConsultar" />
-        <content>
+      id="btnIrParaConsultar"
+      text="Consultar Entrega"
+      type="Emphasized"
+      press=".onIrParaConsultar"
+      class="sapUiTinyMargin"
+    />
 
-            <Input id="inputCep" placeholder="Cep" />
-            <Input id="inputNumero" placeholder="Número" />
+    <content>
 
-                <Button id="idbotao" text="Buscar entrega" press=".onBotaoPress"/>
+      <!-- Seção de entrada -->
+      <VBox
+        id="vboxInputs"
+        class="sapUiSmallMargin sapUiMediumMarginTop"
+        renderType="Bare">
 
+        <Input
+          id="inputCep"
+          placeholder="CEP"
+          width="200px"
+          class="sapUiSmallMarginBottom" />
 
-                <VBox id = "vboxmap">
-                <Text id = "idmap" text="Visualização da Rota:" />
-                <core:HTML
-                id="mapContainer"
-                content="&lt;div id='map' style='height:400px;width:100%'&gt;&lt;/div&gt;"/>
+        <Input
+          id="inputNumero"
+          placeholder="Número"
+          width="200px"
+          class="sapUiSmallMarginBottom" />
 
-            </VBox>
-        </content>
-    </Page>
+        <Button
+          id="btnBuscarEntrega"
+          text="Buscar Entrega"
+          type="Default"
+          press=".onBotaoPress"
+          width="200px"
+          class="sapUiTinyMarginBottom" />
+      </VBox>
+
+      <!-- Seção do mapa -->
+      <VBox
+        id="vboxMapa"
+        class="sapUiSmallMarginTop sapUiMediumMarginBottom sapUiContentPadding">
+
+        <Text
+          id="textTituloMapa"
+          text="Visualização da Rota:"
+          class="sapUiSmallMarginBottom sapUiSmallMarginTop" />
+
+        <core:HTML
+          id="mapContainer"
+          content="&lt;div id='map' style='height:400px;width:100%;border:1px solid #ccc;border-radius:8px'&gt;&lt;/div&gt;" />
+      </VBox>
+
+    </content>
+  </Page>
 </mvc:View>
