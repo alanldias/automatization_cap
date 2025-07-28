@@ -1,0 +1,199 @@
+### ===============================
+###         POST (Inserções)
+### ===============================
+
+### Criar Produto
+POST http://localhost:4004/odata/v4/mm/Produtos
+Content-Type: application/json
+
+{
+  "nome": "Mesa de Jantar",
+  "tipo": "Madeira",
+  "preco": 499.90,
+  "unidade": "un"
+}
+
+### Criar Matéria-Prima
+POST http://localhost:4004/odata/v4/mm/MateriasPrimas
+Content-Type: application/json
+
+{
+  "nome": "Tábua de Pinus",
+  "tipo": "Madeira",
+  "preco": 20,
+  "unidade": "m2"
+}
+
+### Criar Composição de Produto
+POST http://localhost:4004/odata/v4/mm/ComposicaoProdutos
+Content-Type: application/json
+
+{
+  "produto_ID": "PASTE_PRODUTO_ID_AQUI",
+  "materiaPrima_ID": "PASTE_MATERIAPRIMA_ID_AQUI",
+  "quantidade": 3
+}
+
+### Criar Estoque de Produto
+POST http://localhost:4004/odata/v4/mm/EstoquesProdutos
+Content-Type: application/json
+
+{
+  "produto_ID": "PASTE_PRODUTO_ID_AQUI",
+  "quantidade": 40
+}
+
+### Criar Estoque de Matéria-Prima
+POST http://localhost:4004/odata/v4/mm/EstoquesMateriaPrima
+Content-Type: application/json
+
+{
+  "materiaPrima_ID": "PASTE_MATERIAPRIMA_ID_AQUI",
+  "quantidade": 100
+}
+
+### Criar EPI
+POST http://localhost:4004/odata/v4/mm/EPIs
+Content-Type: application/json
+
+{
+  "nome": "Luva de segurança",
+  "tipo": "Equipamento",
+  "unidade": "par"
+}
+
+### Criar Insumo
+POST http://localhost:4004/odata/v4/mm/Insumos
+Content-Type: application/json
+
+{
+  "nome": "Café",
+  "tipo": "Consumo",
+  "unidade": "kg"
+}
+
+### Criar Estoque de Insumo
+POST http://localhost:4004/odata/v4/mm/EstoqueInsumos
+Content-Type: application/json
+
+{
+  "insumo_ID": "PASTE_INSUMO_ID_AQUI",
+  "quantidade": 8,
+  "ultimaReposicao": "2025-07-01"
+}
+
+---
+
+### ===============================
+###         GET (Consultas)
+### ===============================
+
+### Listar Produtos
+GET http://localhost:4004/odata/v4/mm/Produtos
+
+### Listar Matérias-Primas
+GET http://localhost:4004/odata/v4/mm/MateriasPrimas
+
+### Listar Composição de Produtos
+GET http://localhost:4004/odata/v4/mm/ComposicaoProdutos
+
+### Listar Estoque de Produtos
+GET http://localhost:4004/odata/v4/mm/EstoquesProdutos
+
+### Listar Estoque de Matérias-Primas
+GET http://localhost:4004/odata/v4/mm/EstoquesMateriaPrima
+
+### Listar EPIs
+GET http://localhost:4004/odata/v4/mm/EPIs
+
+### Listar Insumos
+GET http://localhost:4004/odata/v4/mm/Insumos
+
+### Listar Estoque de Insumos
+GET http://localhost:4004/odata/v4/mm/EstoqueInsumos
+
+### Listar Histórico de Reposição de Insumos
+GET http://localhost:4004/odata/v4/mm/HistoricoReposicaoInsumos
+
+---
+
+### ===============================
+###         UPDATE (Atualização)
+### ===============================
+
+### Atualizar quantidade em Estoque de Produto
+PATCH http://localhost:4004/odata/v4/mm/EstoquesProdutos(ID)
+Content-Type: application/json
+
+{
+  "quantidade": 20
+}
+
+---
+
+### ===============================
+###         DELETE (Remoção)
+### ===============================
+
+### Deletar Produto
+DELETE http://localhost:4004/odata/v4/mm/Produtos(ID)
+
+### Deletar Matéria-Prima
+DELETE http://localhost:4004/odata/v4/mm/MateriasPrimas(ID)
+
+---
+
+### ===============================
+###     ACTIONS (Regras Negócio)
+### ===============================
+
+### Verificar necessidade de produto
+POST http://localhost:4004/odata/v4/mm/verificarNecessidadeProduto
+Content-Type: application/json
+
+{
+  "produto_ID": "PASTE_PRODUTO_ID_AQUI"
+}
+
+### Gerar ordem de produção
+POST http://localhost:4004/odata/v4/mm/gerarOrdemProducao
+Content-Type: application/json
+
+{
+  "produto_ID": "PASTE_PRODUTO_ID_AQUI",
+  "quantidade": 10
+}
+
+### Verificar necessidade de matéria-prima
+POST http://localhost:4004/odata/v4/mm/verificarNecessidadeMateriaPrima
+Content-Type: application/json
+
+{
+  "materiaPrima_ID": "PASTE_MATERIAPRIMA_ID_AQUI"
+}
+
+### Gerar requisição de compra
+POST http://localhost:4004/odata/v4/mm/gerarRequisicaoCompra
+Content-Type: application/json
+
+{
+  "materiaPrima_ID": "PASTE_MATERIAPRIMA_ID_AQUI",
+  "quantidade": 50
+}
+
+### Verificar reposição de insumos
+POST http://localhost:4004/odata/v4/mm/verificarReposicaoInsumos
+Content-Type: application/json
+
+{
+  "insumo_ID": "PASTE_INSUMO_ID_AQUI"
+}
+
+### Gerar reposição de insumos
+POST http://localhost:4004/odata/v4/mm/gerarReposicaoInsumos
+Content-Type: application/json
+
+{
+  "insumo_ID": "PASTE_INSUMO_ID_AQUI",
+  "quantidade": 20
+}
