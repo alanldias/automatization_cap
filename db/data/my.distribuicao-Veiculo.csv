@@ -1,0 +1,7 @@
+ID,nome,placa,capacidade,emUso,status
+"a0b1c2d3-e4f5-4a6b-7c8d-9e0f1a2b3c4d","VUC Express","BRA2E19",3000,false,"Disponivel"
+"b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e","Fiorino Turbo","RJZ1H25",650,true,"EmRota"
+"c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f","Caminhão Toco","GHT4F01",6000,false,"Manutencao"
+"d3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7g","Carreta 3 Eixos","PRX3J48",25000,true,"EmRota"
+"e4f5a6b7-c8d9-4e0f-1a2b-3c4d5e6f7g8h","Van de Carga","SPW9I77",1500,false,"Disponivel"
+"f5a6b7c8-d9e0-4f1a-2b3c-4d5e6f7g8h9i","Caminhão Truck","MGY7G33",14000,false,"Disponivel"
