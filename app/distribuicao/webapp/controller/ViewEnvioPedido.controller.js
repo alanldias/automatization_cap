@@ -11,33 +11,35 @@ sap.ui.define([
       /* BOTÃO QUE DISPARA A ACTION                       */
       /* ------------------------------------------------ */
       onBotaoPress: async function () {
-        const oModel = this.getView().getModel();
-        const pedidoID   = "8d1a7f2d-8c2f-4c8c-bd70-0aabb81a7af9";
-        // const cepDestino = "80410201"; //11080345 sp // 80410201 ntt cwb
-
-        const cepDestino = this.byId("inputCep").getValue();
-        const numero = this.byId("inputNumero").getValue();
-
-  
+        const oModel   = this.getView().getModel();
+        const sCep     = this.byId("inputCep").getValue();
+        const sNumero  = this.byId("inputNumero").getValue();
+        const sPedido  = "8d1a7f2d-8c2f-4c8c-bd70-0aabb81a7af9";
+      
         try {
           const oAction = oModel.bindContext("/realizarEntrega(...)")
-            .setParameter("pedidoID",  pedidoID)
-            .setParameter("cepDestino", cepDestino)
-            .setParameter("numero", numero); // adiciona isso
-
-
+            .setParameter("pedidoID"  , sPedido)
+            .setParameter("cepDestino", sCep)
+            .setParameter("numero"    , sNumero);
+      
           await oAction.execute();
           const oResult = await oAction.requestObject();
-  
-          /* supondo que o backend devolva tambem geometry */
-          this._geometryEncoded = oResult.geometry;   // 👈 salva string
-
-          console.log(oResult.geometry)
-  
+      
+          /* --- se back retornou erro amigável --- */
+          if (!oResult.success) {
+            MessageBox.error(oResult.message || "Falha ao criar entrega.");
+            return;                          // ✔️ não prossegue
+          }
+      
+          /* --- sucesso --- */
+          this._geometryEncoded = oResult.geometry;
           MessageToast.show(`🚚 ${oResult.message}`);
-          this._drawMap();                            // 👈 desenha
+          this._drawMap();
+      
         } catch (e) {
-          MessageBox.error(e.message);
+          // falha na chamada OData / rede
+          MessageBox.error("Erro inesperado. Tente novamente mais tarde.");
+          console.error("realizarEntrega:", e);   // log desenvolvedor
         }
       },
 

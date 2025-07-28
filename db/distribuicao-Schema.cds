@@ -6,7 +6,7 @@ using {
 } from '@sap/cds/common';
 
 type Polyline : LargeString;
-type Json : LargeString;         
+type Json     : LargeString;
 
 
 entity Entrega : cuid, managed {
@@ -17,26 +17,35 @@ entity Entrega : cuid, managed {
     estadoDestino     : String;
     enderecoCompleto  : String;
     distanciaKm       : Integer;
-    rotaGeometry      : Polyline;          //  ←  campo novo
+    rotaGeometry      : Polyline;
     transportadora    : String;
-    rastreio          : String;            //  já serve de “código da entrega”
-    horarioEntrega    : String ;
+    rastreio          : String; //  já serve de “código da entrega”
+    horarioEntrega    : String;
     statusEntrega     : String enum {
-        Criada; Coletado; EmTransito; SaiuParaEntrega; Entregue; Falhou
+        Criada;
+        Coletado;
+        EmTransito;
+        SaiuParaEntrega;
+        Entregue;
+        Falhou
     };
     comprovanteGerado : Boolean default false;
     dataEnvio         : Date;
     veiculo           : Association to Veiculo;
     centroDist        : Association to CentroDistribuicao;
-    rotaSteps : Json; 
+    rotaSteps         : Json;
 }
+
 entity CentroDistribuicao : cuid {
     nome             : String;
     cidade           : String;
     estado           : String;
     endereco         : String;
     capacidadeMaxima : Integer;
-    veiculos         : Association to many Veiculo on veiculos.centro = $self;
+    lat              : Decimal(9, 6); // ← latitude
+    lon              : Decimal(9, 6); // ← longitude
+    veiculos         : Association to many Veiculo
+                           on veiculos.centro = $self;
 }
 
 entity Veiculo : cuid, managed {
@@ -44,8 +53,11 @@ entity Veiculo : cuid, managed {
     placa      : String;
     capacidade : Integer;
     emUso      : Boolean default false;
-    status     : String enum { Disponivel; EmRota; Manutencao };
+    status     : String enum {
+        Disponivel;
+        EmRota;
+        Manutencao
+    };
 
     centro     : Association to CentroDistribuicao;
 }
-
