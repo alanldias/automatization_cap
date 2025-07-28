@@ -33,7 +33,18 @@ sap.ui.define([
       
           /* --- sucesso --- */
           this._geometryEncoded = oResult.geometry;
-          MessageToast.show(`🚚 ${oResult.message}`);
+          MessageBox.success(
+            `Entrega criada com sucesso!\n📦 Código de rastreio: ${oResult.rastreio}`,
+            {
+              title   : "Entrega criada",
+              actions : ["Visualizar", "Fechar"],
+              onClose : sAction => {
+                if (sAction === "Visualizar") {
+                  this._irParaConsultarComCodigo(oResult.rastreio);
+                }
+              }
+            }
+          );
           this._drawMap();
       
         } catch (e) {
@@ -50,31 +61,58 @@ sap.ui.define([
           console.error("Leaflet ou polyline não carregados!");
           return;
         }
-      
         if (!this._geometryEncoded) {
           console.warn("Sem geometry para desenhar");
           return;
         }
       
-        /* decodifica e desenha */
-        const latlngs = polyline.decode(this._geometryEncoded)
-                                .map(([lat, lon]) => [lat, lon]);
+        /* 1. Decode polyline */
+        const latlngs = polyline
+          .decode(this._geometryEncoded)       // [[lat, lon], ...]
+          .map(([lat, lon]) => [lat, lon]);    // garante formato Leaflet
       
-        /* destrói mapa antigo se existir */
-        if (this._leafletMap) this._leafletMap.remove();
-      
+        /* 2. (Re)cria mapa */
+        if (this._leafletMap) this._leafletMap.remove();   // limpa mapa antigo
         this._leafletMap = L.map("map").setView(latlngs[0], 13);
+      
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap"
         }).addTo(this._leafletMap);
       
+        /* 3. Desenha rota */
         L.polyline(latlngs, { color: "blue" }).addTo(this._leafletMap);
+      
+        /* 4. Ícones personalizados */
+        const oIcon = L.icon({
+          iconUrl : sap.ui.require.toUrl("distribuicao/img/warehouseicon.png"),
+          iconSize: [32, 32],
+          iconAnchor: [16, 32]     // base do pin no centro embaixo
+        });
+      
+        const dIcon = L.icon({
+          iconUrl : sap.ui.require.toUrl("distribuicao/img/houseicon.png"),
+          iconSize: [32, 32],
+          iconAnchor: [16, 32]
+        });
+      
+        /* 5. Markers de origem e destino */
+        L.marker(latlngs[0], { icon: oIcon }).addTo(this._leafletMap)
+          .bindPopup("Origem");
+      
+        L.marker(latlngs[latlngs.length - 1], { icon: dIcon }).addTo(this._leafletMap)
+          .bindPopup("Destino");
       },
-
       onIrParaConsultar: function () {
         this.getOwnerComponent()
             .getRouter()
             .navTo("RouteViewConsultarEntrega");   
+      }, 
+
+      _irParaConsultarComCodigo: function (sCodigo) {
+        const oRouter = this.getOwnerComponent().getRouter();
+        oRouter.navTo("RouteViewConsultarEntrega", {
+          codigo: sCodigo
+        });
       }
     });
   });

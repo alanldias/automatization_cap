@@ -9,9 +9,22 @@ sap.ui.define([
   
     return Controller.extend("distribuicao.controller.ViewConsultarEntrega", {
   
-      /* ================================================================ */
-      /* 1. BOTÃO – rastrearEntrega                                       */
-      /* ================================================================ */
+      onInit: function () {
+        const oRouter = this.getOwnerComponent().getRouter();
+      
+        const oNoCode = oRouter.getRoute("RouteViewConsultarEntrega");
+        const oHaveCode = oRouter.getRoute("RouteViewConsultarEntregaComCodigo");
+      
+        if (oNoCode) oNoCode.attachPatternMatched(this._onRotaCarregada, this);
+        if (oHaveCode) oHaveCode.attachPatternMatched(this._onRotaCarregada, this);
+      },
+      _onRotaCarregada: function (oEvent) {
+        const sCodigo = oEvent.getParameter("arguments")?.codigo;
+        this.byId("inputCodigo").setValue(sCodigo || "");
+      
+        if (sCodigo) this.onBotaoPress();
+      },
+
       onBotaoPress: async function () {
         const oModel  = this.getView().getModel();
         const sCodigo = this.byId("inputCodigo").getValue().trim();
@@ -57,24 +70,47 @@ sap.ui.define([
       /* ================================================================ */
       _drawMap: function () {
         if (!window.L || !window.polyline || !this._geometryEncoded) return;
-  
+      
         const aLatLngs = polyline.decode(this._geometryEncoded)
                                  .map(([lat, lon]) => [lat, lon]);
-  
+      
         if (this._leafletMap) { this._leafletMap.remove(); this._leafletMap = null; }
-  
+      
         const sMapId = "mapConsulta";
         const oDom   = L.DomUtil.get(sMapId);
         if (oDom && oDom._leaflet_id) oDom._leaflet_id = null;
-  
+      
         this._leafletMap = L.map(sMapId).setView(aLatLngs[0], 10);
-  
+      
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap"
         }).addTo(this._leafletMap);
-  
+      
+        /* rota azul */
         L.polyline(aLatLngs, { color: "blue" }).addTo(this._leafletMap);
         this._leafletMap.fitBounds(aLatLngs);
+      
+        /* ---------- ícones personalizados ---------- */
+        const oIconOrigem = L.icon({
+          iconUrl   : sap.ui.require.toUrl("distribuicao/img/warehouseicon.png"),
+          iconSize  : [32, 32],
+          iconAnchor: [16, 32]
+        });
+      
+        const oIconDestino = L.icon({
+          iconUrl   : sap.ui.require.toUrl("distribuicao/img/houseicon.png"),
+          iconSize  : [32, 32],
+          iconAnchor: [16, 32]
+        });
+      
+        /* markers de origem (primeira coordenada) e destino (última) */
+        L.marker(aLatLngs[0], { icon: oIconOrigem })
+          .addTo(this._leafletMap)
+          .bindPopup("Origem");
+      
+        L.marker(aLatLngs[aLatLngs.length - 1], { icon: oIconDestino })
+          .addTo(this._leafletMap)
+          .bindPopup("Destino");
       },
   
       /* ================================================================ */

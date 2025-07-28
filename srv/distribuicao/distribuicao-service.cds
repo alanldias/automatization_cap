@@ -13,6 +13,8 @@ service distribuicaoServico {
         success  : Boolean;
         message  : String;
         geometry : my.Polyline; // devolve imediatamente p/ UI5
+        rastreio  : String;         
+
     };
 
     action rastrearEntrega(codigo : String) returns {

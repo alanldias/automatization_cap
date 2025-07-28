@@ -101,10 +101,15 @@
         },
         {
           "name": "RouteViewConsultarEntrega",
-          "pattern": "consultar-entrega",
+          "pattern": "consultar-entrega/{codigo}",
           "target": [
             "TargetViewConsultarEntrega"
           ]
+        },
+        {
+          "name": "RouteViewConsultarEntrega",
+          "pattern": "consultar-entrega",
+          "target": ["TargetViewConsultarEntrega"]
         }
       ],
       "targets": {

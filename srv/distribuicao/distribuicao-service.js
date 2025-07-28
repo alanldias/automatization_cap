@@ -38,6 +38,8 @@ module.exports = async function (srv) {
   
       // 4. Calcula rota
       const { distanceKm, geometry, steps } = await calcularRota(origemCoords, destino);
+
+      const codigoRastreio = `R${Math.trunc(Math.random() * 1_000_000)}`;
   
       // 5. Cria entrega
       await INSERT.into(Entrega).entries({
@@ -51,7 +53,7 @@ module.exports = async function (srv) {
         rotaGeometry     : geometry,
         rotaSteps        : JSON.stringify(steps),
         transportadora   : cd.nome,
-        rastreio         : `R${Math.trunc(Math.random() * 1_000_000)}`,
+        rastreio: codigoRastreio,
         statusEntrega    : "Criada",
         dataEnvio        : new Date(),
         veiculo_ID       : veiculo.ID,
@@ -65,7 +67,8 @@ module.exports = async function (srv) {
         success : true,
         message : `Entrega criada a partir do CD ${cd.nome}`,
         geometry,
-        steps
+        steps,
+        rastreio: codigoRastreio  
       };
   
     } catch (err) {
