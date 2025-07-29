@@ -12,15 +12,21 @@ sap.ui.define([
       /* ------------------------------------------------ */
       onBotaoPress: async function () {
         const oModel   = this.getView().getModel();
-        const sCep     = this.byId("inputCep").getValue();
-        const sNumero  = this.byId("inputNumero").getValue();
+        const sCep     = this.byId("inputCep").getValue().trim();
+        const sNumero  = this.byId("inputNumero").getValue().trim();
         const sPedido  = "8d1a7f2d-8c2f-4c8c-bd70-0aabb81a7af9";
+      
+        // Validação do CEP
+        if (!sCep || !/^\d{8}$/.test(sCep.replace(/\D/g, ""))) {
+          sap.m.MessageToast.show("Informe um CEP válido com 8 dígitos.");
+          return;
+        }
       
         try {
           const oAction = oModel.bindContext("/realizarEntrega(...)")
             .setParameter("pedidoID"  , sPedido)
             .setParameter("cepDestino", sCep)
-            .setParameter("numero"    , sNumero);
+            .setParameter("numero"    , sNumero);  // ← continua opcional
       
           await oAction.execute();
           const oResult = await oAction.requestObject();
@@ -110,7 +116,7 @@ sap.ui.define([
 
       _irParaConsultarComCodigo: function (sCodigo) {
         const oRouter = this.getOwnerComponent().getRouter();
-        oRouter.navTo("RouteViewConsultarEntrega", {
+        oRouter.navTo("RouteViewConsultarEntregaComCodigo", {
           codigo: sCodigo
         });
       }

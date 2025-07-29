@@ -17,7 +17,7 @@
         <Input
           id="inputCodigo"
           placeholder="Código de rastreio (ex.: R123456)"
-          width="200px"
+          width="300px"
           class="sapUiSmallMarginBottom" />
 
         <Button
@@ -25,7 +25,7 @@
           text="Buscar Entrega"
           press=".onBotaoPress"
           type="Emphasized"
-         width="400px"
+         width="150px"
 
           class="sapUiTinyMarginBottom" />
       </VBox>

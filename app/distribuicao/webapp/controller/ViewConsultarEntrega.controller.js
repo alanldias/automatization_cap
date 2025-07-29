@@ -12,15 +12,16 @@ sap.ui.define([
       onInit: function () {
         const oRouter = this.getOwnerComponent().getRouter();
       
-        const oNoCode = oRouter.getRoute("RouteViewConsultarEntrega");
-        const oHaveCode = oRouter.getRoute("RouteViewConsultarEntregaComCodigo");
+        oRouter.getRoute("RouteViewConsultarEntrega")
+               ?.attachPatternMatched(this._onRotaCarregada, this);
       
-        if (oNoCode) oNoCode.attachPatternMatched(this._onRotaCarregada, this);
-        if (oHaveCode) oHaveCode.attachPatternMatched(this._onRotaCarregada, this);
+        oRouter.getRoute("RouteViewConsultarEntregaComCodigo")
+               ?.attachPatternMatched(this._onRotaCarregada, this);
       },
+      
       _onRotaCarregada: function (oEvent) {
-        const sCodigo = oEvent.getParameter("arguments")?.codigo;
-        this.byId("inputCodigo").setValue(sCodigo || "");
+        const sCodigo = oEvent.getParameter("arguments")?.codigo || "";
+        this.byId("inputCodigo").setValue(sCodigo);
       
         if (sCodigo) this.onBotaoPress();
       },
@@ -29,8 +30,8 @@ sap.ui.define([
         const oModel  = this.getView().getModel();
         const sCodigo = this.byId("inputCodigo").getValue().trim();
   
-        if (!sCodigo) {
-          MessageToast.show("Informe o código de rastreio.");
+        if (!/^R\d{1,6}$/.test(sCodigo)) {
+          MessageToast.show("Código de rastreio inválido. Use o formato R seguido de até 6 dígitos.");
           return;
         }
   

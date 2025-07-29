@@ -100,7 +100,7 @@
           ]
         },
         {
-          "name": "RouteViewConsultarEntrega",
+          "name": "RouteViewConsultarEntregaComCodigo",
           "pattern": "consultar-entrega/{codigo}",
           "target": [
             "TargetViewConsultarEntrega"

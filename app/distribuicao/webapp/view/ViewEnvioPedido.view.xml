@@ -38,7 +38,7 @@
 
         <Button
           id="btnBuscarEntrega"
-          text="Buscar Entrega"
+          text="Realizar Entrega"
           type="Default"
           press=".onBotaoPress"
           width="200px"

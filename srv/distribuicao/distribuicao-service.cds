@@ -28,7 +28,7 @@ service distribuicaoServico {
     };
 
     action atualizarStatusEntrega(codigo : String, // rastreio
-                                  novoStatus : String // deve estar na enum
+                                  novoStatus : String 
     )                                       returns {
         success : Boolean;
         message : String;

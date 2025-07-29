@@ -5,7 +5,7 @@ const selecionarVeiculoEcd = require('./utils/selecionarVeiculo');
 const cds              = require('@sap/cds');
 
 module.exports = async function (srv) {
-  const { Entrega, Veiculo, CentroDistribuicao } = srv.entities;
+  const { Entrega, Veiculo } = srv.entities;
 
   const PERIOD = h =>      // 08–11 → Manha, 12–17 → Tarde, resto → Noite
   (h >=  8 && h < 12) ? 'Manha'  :
