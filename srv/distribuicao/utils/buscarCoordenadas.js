@@ -23,8 +23,8 @@ async function geocodeMapbox(q) {
     });
     const f = data.features?.[0];
     return f && { lat: f.center[1], lon: f.center[0], src: "mapbox" };
-  } catch (e) {
-    console.warn("❌ Mapbox:", e.message);
+  } catch (err) {
+    console.warn("❌ Mapbox:", err.message);
     return null;
   }
 }

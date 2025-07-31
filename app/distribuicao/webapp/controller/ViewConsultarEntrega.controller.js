@@ -41,12 +41,13 @@ sap.ui.define([
   
           await oAction.execute();
           const oResult = await oAction.requestObject();
+          console.log(oResult,"resultado da action")
           if (!oResult.success) throw new Error(oResult.message);
   
           /* ---- guarda para uso posterior ---- */
           this._codigoRastreio  = sCodigo;
           this._geometryEncoded = oResult.geometry;
-          this._aSteps          = oResult.steps || [];
+          this._aSteps = JSON.parse(oResult.etapasRota || "[]");
           this._horarioEntrega  = oResult.horarioEntrega;  // pode vir nulo
   
           /* desenha mapa */
@@ -61,14 +62,12 @@ sap.ui.define([
           /* ---------- ainda não entregue → anima ---------- */
           this._simularEntrega(this._aSteps);
   
-        } catch (e) {
-          MessageBox.error(e.message || "Erro inesperado");
+        } catch (err) {
+          MessageBox.error(err.message || "Erro inesperado");
         }
       },
   
-      /* ================================================================ */
       /* 2. Desenha rota (sem iniciar animação)                           */
-      /* ================================================================ */
       _drawMap: function () {
         if (!window.L || !window.polyline || !this._geometryEncoded) return;
       
@@ -104,7 +103,7 @@ sap.ui.define([
           iconAnchor: [16, 32]
         });
       
-        /* markers de origem (primeira coordenada) e destino (última) */
+        /* markers de origem (primeira coordenada) err destino (última) */
         L.marker(aLatLngs[0], { icon: oIconOrigem })
           .addTo(this._leafletMap)
           .bindPopup("Origem");
@@ -114,14 +113,12 @@ sap.ui.define([
           .bindPopup("Destino");
       },
   
-      /* ================================================================ */
       /* 3. Anima caminhão + atualiza status                              */
-      /* ================================================================ */
       _simularEntrega: async function (aSteps) {
         if (!aSteps?.length) return;
   
         /* ---- marca como EmTransito ---- */
-        await this._atualizarStatus(this._codigoRastreio, "EmTransito");
+        await this._atualizarStatus(this._codigoRastreio, "EM_TRANSITO");
   
         if (oSimulador) clearInterval(oSimulador);
   
@@ -145,8 +142,8 @@ sap.ui.define([
           if (iStep >= n) {
             clearInterval(oSimulador);
   
-            /* ---- marca Entregue e mostra horário ---- */
-            const resp = await this._atualizarStatus(this._codigoRastreio, "Entregue");
+            /* ---- marca Entregue err mostra horário ---- */
+            const resp = await this._atualizarStatus(this._codigoRastreio, "ENTREGUE");
             this._showEntregaToast(resp?.horarioEntrega || "—:—");
   
             return;
@@ -164,9 +161,7 @@ sap.ui.define([
         }, 3000);
       },
   
-      /* ================================================================ */
       /* 4. Action atualizarStatusEntrega                                 */
-      /* ================================================================ */
       _atualizarStatus: async function (sCodigo, sStatus) {
         const oModel = this.getView().getModel();
         try {
@@ -181,9 +176,7 @@ sap.ui.define([
         }
       },
   
-      /* ================================================================ */
       /* 5. Toast de entrega concluída                                    */
-      /* ================================================================ */
       _showEntregaToast: function (sPeriodoHora) {
         const txt = sPeriodoHora
           ? `✅ Pedido já foi entregue às ${sPeriodoHora}`

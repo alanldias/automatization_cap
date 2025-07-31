@@ -53,8 +53,8 @@ async function rotaMapbox(start, end) {
 module.exports = async function calcularRota(start, end) {
   try {
     return await rotaORS(start, end);              // ① tenta ORS
-  } catch (e) {
-    console.warn("⚠️  ORS falhou:", e.message, "– tentando Mapbox …");
+  } catch (err) {
+    console.warn("⚠️  ORS falhou:", err.message, "– tentando Mapbox …");
     return await rotaMapbox(start, end);           // ② fallback Mapbox
   }
 };

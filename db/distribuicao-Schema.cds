@@ -21,19 +21,19 @@ entity Entrega : cuid, managed {
     transportadora    : String;
     rastreio          : String; //  já serve de “código da entrega”
     horarioEntrega    : String;
-    statusEntrega     : String enum {
-        Criada;
-        Coletado;
-        EmTransito;
-        SaiuParaEntrega;
-        Entregue;
-        Falhou
+     statusEntrega : String enum {
+      CRIADA;
+      COLETADO;
+      EM_TRANSITO;
+      SAIU_PARA_ENTREGA;
+      ENTREGUE;
+      FALHOU
     };
     comprovanteGerado : Boolean default false;
     dataEnvio         : Date;
     veiculo           : Association to Veiculo;
-    centroDist        : Association to CentroDistribuicao;
-    rotaSteps         : Json;
+    centroDistribuicao: Association to CentroDistribuicao;
+    etapasRota         : Json;
 }
 
 entity CentroDistribuicao : cuid {

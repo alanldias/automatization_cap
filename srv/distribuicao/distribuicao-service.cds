@@ -21,9 +21,9 @@ service distribuicaoServico {
         success       : Boolean;
         message       : String;
         geometry      : my.Polyline;
-        steps         : LargeString;
+        etapasRota    : LargeString;
         statusEntrega : String;
-        horarioEntrega : String;     //  ← novo
+        horarioEntrega: String;     //  ← novo
         distanciaKm   : Integer;
     };
 

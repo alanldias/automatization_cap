@@ -7,9 +7,7 @@ sap.ui.define([
   
     return Controller.extend("distribuicao.controller.ViewEnvioPedido", {
   
-      /* ------------------------------------------------ */
       /* BOTÃO QUE DISPARA A ACTION                       */
-      /* ------------------------------------------------ */
       onBotaoPress: async function () {
         const oModel   = this.getView().getModel();
         const sCep     = this.byId("inputCep").getValue().trim();
@@ -53,10 +51,10 @@ sap.ui.define([
           );
           this._drawMap();
       
-        } catch (e) {
+        } catch (err) {
           // falha na chamada OData / rede
           MessageBox.error("Erro inesperado. Tente novamente mais tarde.");
-          console.error("realizarEntrega:", e);   // log desenvolvedor
+          console.error("realizarEntrega:", err);   // log desenvolvedor
         }
       },
 
@@ -101,7 +99,7 @@ sap.ui.define([
           iconAnchor: [16, 32]
         });
       
-        /* 5. Markers de origem e destino */
+        /* 5. Markers de origem err destino */
         L.marker(latlngs[0], { icon: oIcon }).addTo(this._leafletMap)
           .bindPopup("Origem");
       
