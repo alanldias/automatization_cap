@@ -54,7 +54,7 @@ sap.ui.define([
           this._drawMap();
   
           /* ---------- já entregue? ---------- */
-          if (oResult.statusEntrega === "Entregue") {
+          if (oResult.statusEntrega === "ENTREGUE") {
             this._showEntregaToast(this._horarioEntrega);
             return;                     // NÃO anima
           }
