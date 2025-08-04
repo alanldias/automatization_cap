@@ -24,24 +24,18 @@ service MMService @(path: '/odata/v4/mm') {
 
   // Ações
 
-  @odata.action
   action gerarRequisicaoCompra(materiaPrima_ID : UUID, quantidade : Integer)      returns Boolean;
 
-  @odata.action
   action verificarReposicaoInsumos(insumo_ID : UUID)                              returns Boolean;
 
-  @odata.action
   action gerarReposicaoInsumos(insumo_ID : UUID, quantidade : Integer)            returns Boolean;
 
   // Produção
 
-  @odata.action
   action produzirProduto(produto_ID : UUID, quantidade : Integer)                 returns
   Boolean;
 
-  @odata.action
   action confirmarProducaoProduto(ordemProducao_ID : UUID)                        returns Boolean;
 
-  @odata.action
   action verificarEstoqueProduto(produto_ID : UUID, quantidadeDesejada : Integer) returns Boolean;
 }
