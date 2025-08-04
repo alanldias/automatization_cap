@@ -1,4 +1,6 @@
 using VendasService as service from '../../srv/vendas/vendas-service';
+using from '../../db/vendas-Schema';
+
 annotate service.Clientes with @(
     UI.FieldGroup #GeneratedGroup : {
         $Type : 'UI.FieldGroupType',
@@ -50,10 +52,19 @@ annotate service.Clientes with @(
 annotate VendasService.Enderecos with @(
     UI.LineItem : [
         // Define as colunas que aparecerão na tabela
-        { Value: tipo },
-        { Value: logradouro },
-        { Value: cidade },
-        { Value: estado },
-        { Value: cep }
+        { Value: tipo,
+            @UI.Importance : #Low, },
+        { Value: logradouro,
+            @UI.Importance : #High, },
+        { Value: numero,
+            @UI.Importance : #High, },
+        { Value: bairro,
+            @UI.Importance : #Low, },
+        { Value: cidade,
+            @UI.Importance : #Low, },
+        { Value: estado,
+            @UI.Importance : #Low, },
+        { Value: cep,
+            @UI.Importance : #High, }
     ]
 );
