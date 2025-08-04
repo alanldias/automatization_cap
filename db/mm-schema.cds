@@ -52,7 +52,6 @@ entity OrdemProducao : cuid, managed {
 entity EPI : cuid, managed {
   nome       : String(100);
   tipo       : String(30); // Ex: Segurança, Proteção Auditiva etc.
-
   unidade    : String(10); // para controle de estoque (ex: un, par)
   quantidade : Integer;
 }

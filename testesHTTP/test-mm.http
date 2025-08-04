@@ -1,0 +1,26 @@
+POST http://localhost:4004/odata/v4/mm/verificarEstoqueProduto
+Content-Type: application/json
+
+{
+  "produto_ID": "e1a7a4fa-aaaa-4a2b-bbbb-111111111111",
+  "quantidadeDesejada": 30 
+}
+
+###
+
+POST http://localhost:4004/odata/v4/mm/produzirProduto 
+Content-Type: application/json
+
+{
+  "produto_ID": "e1a7a4fa-aaaa-4a2b-bbbb-111111111111",
+  "quantidade": 5
+}
+
+###
+
+POST http://localhost:4004/odata/v4/mm/confirmarProducaoProduto
+Content-Type: application/json
+
+{
+  "ordemProducao_ID": "7b4d453c-d8db-4197-93d0-dcfb25269ae9"
+}

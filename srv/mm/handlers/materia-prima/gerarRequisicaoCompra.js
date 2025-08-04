@@ -1,0 +1,14 @@
+// 🛒 Cria uma Requisição de Compra no banco, para uma matéria-prima e quantidade
+const cds = require('@sap/cds');
+
+module.exports = async function gerarRequisicaoCompra(tx, materiaPrima_ID, quantidade) {
+  // 1️⃣ Executa o insert na tabela de Requisicoes
+  await tx.run(
+    INSERT.into('my.modulomm.RequisicaoCompra').entries({
+      materiaPrima_ID: { ID: materiaPrima_ID }, // 👈 Necessário pois é Association
+      quantidade,
+      status: 'pendente',                       // ✅ Status inicial
+      dataCriacao: new Date()                   // 🕓 Marca a data atual
+    })
+  );
+};

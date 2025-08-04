@@ -1,0 +1,60 @@
+<mvc:View
+  controllerName="producao.producao.controller.View1"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Page id="page" title="Ordens de Produção - Fábrica" showHeader="true">
+
+    <VBox id="vboxcabecalho" class="sapUiSmallMargin">
+      <Toolbar id="cabecalho">
+        <Title id="texto" text="Ordens de Produção Abertas" />
+        <ToolbarSpacer id="espaco"/>
+        <Button id="botaoAtualizar" icon="sap-icon://refresh" press=".onAtualizar" tooltip="Atualizar lista" />
+      </Toolbar>
+
+      <Table
+  id="tableOrdensProducao" 
+  items="{
+    path: '/OrdensProducao',
+    parameters: {
+      $filter: 'status eq \'pendente\''
+    }
+  }"
+  mode="SingleSelectMaster"
+  class="tabelaComBorda"
+  growing="true">
+
+        <columns>
+          <Column id="coluna1">
+            <Text id="textoColuna1" text="ID" />
+          </Column>
+          <Column id="coluna5">
+            <Text id="textoColuna5" text="Produto" />
+          </Column>
+          <Column id="coluna2">
+            <Text id="textoColuna2" text="Quantidade" />
+          </Column>
+          <Column id="coluna3">
+            <Text id="textoColuna3" text="Status" />
+          </Column>
+          <Column id="coluna4">
+            <Text id="textoColuna4" text="Confirmação" />
+          </Column>
+        </columns>
+
+        <items>
+          <ColumnListItem id="tabela" type="Active">
+            <cells>
+              <Text id="produto" text="{produto_ID_ID}" />
+              <Text id="nome" text="{produto_nome}" />
+              <Text id="quantidade" text="{quantidade}" />
+              <ObjectStatus id="status" text="{status}" state="Warning"/>
+              <Button id="botaoPronto" text="Pronto!" type="Emphasized" press=".onConfirmarProducao" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </VBox>
+  </Page>
+</mvc:View>
