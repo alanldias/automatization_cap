@@ -34,6 +34,8 @@ entity Entrega : cuid, managed {
     veiculo           : Association to Veiculo;
     centroDistribuicao: Association to CentroDistribuicao;
     etapasRota         : Json;
+    destinos     : LargeString;
+    sequenciaRastreios  : LargeString;
 }
 
 entity CentroDistribuicao : cuid {

@@ -110,18 +110,36 @@
           "name": "RouteViewConsultarEntrega",
           "pattern": "consultar-entrega",
           "target": ["TargetViewConsultarEntrega"]
+        },
+        {
+          "name": "RouteViewEnvioPedidoComCodigo",
+          "pattern": "envio-pedido/{codigo}/{cep}/{numero}",
+          "target": [
+            "TargetViewEnvioPedido"
+          ]
+        },
+        {
+          "name": "RouteViewEnvioPedidoTeste",
+          "pattern": "enviar-codigo",
+          "target": [
+            "TargetViewTeste"
+          ]
         }
       ],
-      "targets": {
-        "TargetViewEnvioPedido": {
-          "id": "ViewEnvioPedido",
-          "name": "ViewEnvioPedido"
-        },
-        "TargetViewConsultarEntrega": {
-          "id": "ViewConsultarEntrega",
-          "name": "ViewConsultarEntrega"
-        }
+     "targets": {
+      "TargetViewEnvioPedido": {
+        "id": "ViewEnvioPedido",
+        "name": "ViewEnvioPedido"
+      },
+      "TargetViewConsultarEntrega": {
+        "id": "ViewConsultarEntrega",
+        "name": "ViewConsultarEntrega"
+      },
+      "TargetViewTeste": {
+        "id": "ViewTeste",
+        "name": "ViewTeste"
       }
+    }
     },
     "rootView": {
       "viewName": "distribuicao.view.App",

@@ -7,31 +7,35 @@ service distribuicaoServico {
 
     entity CentroDistribuicao as projection on my.CentroDistribuicao;
 
-    action realizarEntrega(pedidoID : UUID,
-                           cepDestino : String,
-                           numero : String) returns {
+    type PedidoInput {
+        pedidoID : UUID;
+        cep      : String;
+        numero   : String;
+    }
+
+    action realizarEntrega(pedidos : many PedidoInput) returns {
         success  : Boolean;
         message  : String;
-        geometry : my.Polyline; // devolve imediatamente p/ UI5
-        rastreio  : String;         
-
+        geometry : my.Polyline;
+        steps    : LargeString;
     };
 
-    action rastrearEntrega(codigo : String) returns {
-        success       : Boolean;
-        message       : String;
-        geometry      : my.Polyline;
-        etapasRota    : LargeString;
-        statusEntrega : String;
-        horarioEntrega: String;     //  ← novo
-        distanciaKm   : Integer;
+    action rastrearEntrega(codigo : String)            returns {
+        success            : Boolean;
+        message            : String;
+        geometry           : my.Polyline;
+        etapasRota         : LargeString;
+        destinos           : LargeString;
+        sequenciaRastreios : LargeString;
+        statusEntrega      : String;
+        horarioEntrega     : String; //  ← novo
+        distanciaKm        : Integer;
     };
 
     action atualizarStatusEntrega(codigo : String, // rastreio
-                                  novoStatus : String 
-    )                                       returns {
-        success : Boolean;
-        message : String;
-        horarioEntrega : String;     // devolve quando virar Entregue
+                                  novoStatus : String) returns {
+        success        : Boolean;
+        message        : String;
+        horarioEntrega : String; // devolve quando virar Entregue
     };
 }

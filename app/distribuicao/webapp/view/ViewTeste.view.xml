@@ -1,0 +1,21 @@
+<mvc:View controllerName="distribuicao.controller.ViewTeste"
+    displayBlock="true"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page title="Teste de Envio"
+    id = "testeenviopedido">
+        <content>
+            <Button 
+                text="Enviar Pedido" 
+                press=".onPressEnviarPedido" 
+                id="lasda9213"/>
+
+                 <Button 
+                text="Enviar Pedido" 
+                press=".onPressEnviarVariosPedidos" 
+                id="lasda9213213"/>
+        </content>
+    </Page>
+
+</mvc:View>

@@ -6,13 +6,46 @@ sap.ui.define([
     "use strict";
   
     return Controller.extend("distribuicao.controller.ViewEnvioPedido", {
+
+      onInit: function () {
+        const oRouter = this.getOwnerComponent().getRouter();
+      
+        oRouter.getRoute("RouteViewEnvioPedido")
+               ?.attachPatternMatched(this._onRotaCarregada, this);
+      
+        oRouter.getRoute("RouteViewEnvioPedidoComCodigo")
+               ?.attachPatternMatched(this._onRotaCarregada, this);
+      },
+      
+      _onRotaCarregada: function (oEvent) {
+        const args = oEvent.getParameter("arguments") || {};
+
+        console.log(args)
+      
+        this._pedidoID = args.codigo;
+      
+        if (!this._pedidoID) {
+          MessageBox.error("Pedido não informado.");
+          return;
+        }
+      
+        if (args.cep) {
+          this.byId("inputCep")?.setValue(args.cep);
+        }
+      
+        if (args.numero) {
+          this.byId("inputNumero")?.setValue(args.numero);
+        }
+      
+        this.onBotaoPress(); // dispara ação automática
+      },
   
-      /* BOTÃO QUE DISPARA A ACTION                       */
+       /* BOTÃO QUE DISPARA A ACTION                       */
       onBotaoPress: async function () {
         const oModel   = this.getView().getModel();
         const sCep     = this.byId("inputCep").getValue().trim();
         const sNumero  = this.byId("inputNumero").getValue().trim();
-        const sPedido  = "8d1a7f2d-8c2f-4c8c-bd70-0aabb81a7af9";
+        const sPedido = this._pedidoID;
       
         // Validação do CEP
         if (!sCep || !/^\d{8}$/.test(sCep.replace(/\D/g, ""))) {
@@ -22,9 +55,11 @@ sap.ui.define([
       
         try {
           const oAction = oModel.bindContext("/realizarEntrega(...)")
-            .setParameter("pedidoID"  , sPedido)
-            .setParameter("cepDestino", sCep)
-            .setParameter("numero"    , sNumero);  // ← continua opcional
+          oAction.setParameter("pedidos", [{
+            pedidoID : sPedido,
+            cep      : sCep,
+            numero   : sNumero              // pode estar vazio, se quiser
+          }]);      
       
           await oAction.execute();
           const oResult = await oAction.requestObject();
