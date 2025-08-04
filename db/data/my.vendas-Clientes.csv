@@ -1,0 +1,11 @@
+ID,nome,email,telefone,createdAt,createdBy,modifiedAt,modifiedBy
+"a1b2c3d4-e5f6-7890-1234-567890abcdef","Ana Silva","ana.silva@example.com","(41) 99876-5432","2024-07-30T14:10:00Z","admin","2024-07-30T14:10:00Z","admin"
+"b2c3d4e5-f6a7-8901-2345-67890abcdef1","Bruno Costa","bruno.costa@example.com","(11) 98765-4321","2024-07-29T11:25:10Z","system","2024-07-29T11:25:10Z","system"
+"c3d4e5f6-a7b8-9012-3456-7890abcdef12","Carla Dias","carla.dias@example.com","(21) 97654-3210","2024-07-28T09:05:30Z","admin","2024-07-28T09:05:30Z","admin"
+"d4e5f6a7-b8c9-0123-4567-890abcdef123","Daniel Martins","daniel.m@example.com","(51) 96543-2109","2024-07-30T10:00:00Z","system","2024-07-30T14:15:00Z","admin"
+"e5f6a7b8-c9d0-1234-5678-90abcdef1234","Eduarda Ferreira","eduarda.f@example.com","(31) 95432-1098","2024-07-27T18:45:00Z","admin","2024-07-27T18:45:00Z","admin"
+"f6a7b8c9-d0e1-2345-6789-0abcdef12345","Fábio Pereira","fabio.p@example.com","(48) 94321-0987","2024-07-26T20:15:00Z","admin","2024-07-26T20:15:00Z","admin"
+"a7b8c9d0-e1f2-3456-7890-bcdef1234567","Gabriela Oliveira","gabi.oliveira@example.com","(61) 93210-9876","2024-07-30T13:30:00Z","system","2024-07-30T13:30:00Z","system"
+"b8c9d0e1-f2a3-4567-8901-cdef12345678","Heitor Santos","heitor.s@example.com","(85) 92109-8765","2024-07-25T14:00:00Z","admin","2024-07-25T14:00:00Z","admin"
+"c9d0e1f2-a3b4-5678-9012-def123456789","Isabela Souza","isabela.souza@example.com","(71) 91098-7654","2024-07-29T16:50:00Z","admin","2024-07-30T09:20:00Z","admin"
+"d0e1f2a3-b4c5-6789-0123-ef1234567890","João Rocha","joao.rocha@example.com","(98) 90987-6543","2024-07-30T08:00:00Z","system","2024-07-30T08:00:00Z","system"

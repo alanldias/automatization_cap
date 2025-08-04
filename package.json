@@ -31,7 +31,8 @@
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
     "cds-watch": "cds watch --open",
     "watch-distribuicao": "cds watch --open distribuicao/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-vendas": "cds watch --open vendas/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-vendas": "cds watch --open vendas/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-venda": "cds watch --open venda/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
@@ -49,5 +50,8 @@
       }
     }
   },
-  "lcap": true
+  "lcap": true,
+  "sapux": [
+    "app/venda"
+  ]
 }

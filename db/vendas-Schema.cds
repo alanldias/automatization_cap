@@ -38,6 +38,7 @@ type TipoEndereco : String enum {
  * Entidade para armazenar os dados dos clientes.
  * Cada cliente pode ter múltiplos endereços.
  */
+ @odata.draft.enabled
 entity Clientes : cuid, managed {
     key ID          : UUID;
         nome        : String(100) @title: 'Nome';
@@ -50,7 +51,8 @@ entity Clientes : cuid, managed {
 /**
  * Endereços associados a um cliente.
  */
-entity Enderecos : cuid {
+ @title: 'Endereço'
+ entity Enderecos : cuid {
     key ID          : UUID;
         cliente     : Association to Clientes;
         tipo        : TipoEndereco;
