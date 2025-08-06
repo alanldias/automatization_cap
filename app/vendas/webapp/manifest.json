@@ -1,0 +1,137 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "vendas",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.18.4",
+      "toolsId": "c8ab0db9-4152-44f7-b515-d78d11f1c65a"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/vendas/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.138.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "vendas.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "vendas.view",
+        "async": true,
+        "viewPath": "vendas.view"
+      },
+      "routes": [
+        {
+          "name": "RouteCatalogo",
+          "pattern": ":?query:",
+          "target": [
+            "TargetCatalogo"
+          ]
+        },
+        {
+          "pattern": "cart",
+          "name": "Cart",
+          "target": "Cart"
+        },
+        {
+          "pattern": "orders",
+          "name": "Orders",
+          "target": "Orders"
+        }
+        
+      ],
+      "targets": {
+        "TargetCatalogo": {
+          "id": "Catalogo",
+          "name": "Catalogo"
+        },
+        "Cart": {
+          "id": "Cart",
+          "name":  "Cart"
+        },
+        "Orders": {
+          "id": "Orders",
+          "name": "Orders"
+        }
+
+      }
+    },
+    "rootView": {
+      "viewName": "vendas.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

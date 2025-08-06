@@ -1,0 +1,67 @@
+<mvc:View
+    controllerName="vendas.controller.Catalogo"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page id="catalogPage" title="Catálogo de Produtos">
+        <content>
+            <FlexBox
+                id="productFlexBox"
+                wrap="Wrap"
+                justifyContent="Start"
+                items="{
+                    path: '/Produtos'
+                }">
+                <items>
+                    <VBox
+                        id="productCard"
+                        class="sapUiSmallMargin cardStyle"
+                        width="200px">
+                        <!-- Imagem do produto -->
+                        <Image
+                            id="imgProduct"
+                            src="{imagem}"
+                            width="100%"
+                            height="150px"
+                            densityAware="false"
+                            decorative="false" />
+
+                        <!-- Nome -->
+                        <Title
+                            id="titleProductName"
+                            text="{nome}"
+                            wrapping="true"
+                            level="H4" />
+
+                        <!-- Descrição -->
+                        <Text
+                            id="txtProductDesc"
+                            text="{descricao}"
+                            wrapping="true" />
+
+                        <!-- Preço -->
+                        <ObjectNumber
+                            id="numProductPrice"
+                            unit="R$"
+                            number="{preco}"
+                             />
+
+                        <!-- Botão adicionar -->
+                        <Button
+                            id="btnAddToCart"
+                            text="Adicionar"
+                            type="Emphasized"
+                            press=".onAddToCart" />
+                    </VBox>
+                </items>
+            </FlexBox>
+        </content>
+
+        <footer>
+            <Toolbar id="catalogToolbar">
+                <ToolbarSpacer id="catalogToolbarSpacer" />
+                <Button id="btnGoToCart" text="Ver Carrinho" press=".onGoToCart" />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>

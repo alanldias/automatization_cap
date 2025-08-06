@@ -1,0 +1,34 @@
+<mvc:View
+    controllerName="vendas.controller.Orders"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page id="ordersPage" title="Meus Pedidos">
+        <content>
+            <List id="ordersList" items="{ path: '/Pedidos' }">
+                <CustomListItem id="orderListItem">
+                    <HBox id="orderHBox" justifyContent="SpaceBetween" alignItems="Center">
+                        <VBox id="orderVBox">
+                            <Text id="txtOrderID" text="Pedido ID: {ID}" />
+                            <Text id="txtOrderStatus" text="Status: {status}" />
+                            <Text id="txtOrderTotal" text="Total: R$ {total}" />
+                            <Text id="txtOrderDate" text="Data: {dataPedido}" />
+                        </VBox>
+                        <Button
+                            id="btnOrderPay"
+                            text="Pagar"
+                            type="Accept"
+                            press=".onPay"
+                            enabled="{= ${status} !== 'Pago' }" />
+                    </HBox>
+                </CustomListItem>
+            </List>
+        </content>
+        <footer>
+            <Toolbar id="ordersToolbar">
+                <ToolbarSpacer id="ordersToolbarSpacer" />
+                <Button id="btnOrdersBack" text="Voltar" press=".onNavBack" />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>
