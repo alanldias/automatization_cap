@@ -27,7 +27,8 @@ entity Entrega : cuid, managed {
       EM_TRANSITO;
       SAIU_PARA_ENTREGA;
       ENTREGUE;
-      FALHOU
+      FALHOU;
+      REAGENDAR;
     };
     comprovanteGerado : Boolean default false;
     dataEnvio         : Date;

@@ -1,0 +1,11 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="dialogEntregador" title="Confirmação do Entregador" type="Message" draggable="true" resizable="true">
+    <Text id = "TituloEntregador" text="Selecione a situação da entrega:"/>
+    <VBox id = "TituloEntregadorVbox">
+      <Button id = "TituloEntregadorPedido" text="✅ Pedido entregue" press=".onEntregadorConfirmado"/>
+      <Button id = "TituloEntregadorCliente" text="🚫 Cliente não estava" press=".onEntregadorFalha"/>
+      <Button id = "TituloEntregadorCliente2" text="❓ Cliente não reconhece o pedido" press=".onEntregadorFalha"/>
+      <Button id = "TituloEntregadorEndereco" text="📍 Endereço não encontrado" press=".onEntregadorFalha"/>
+    </VBox>
+  </Dialog>
+</core:FragmentDefinition>

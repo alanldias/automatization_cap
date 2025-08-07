@@ -1,0 +1,11 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="dialogCliente" title="Confirmação do Cliente" type="Message" draggable="true" resizable="true">
+    <Text id = "TituloCliente" text="O pedido chegou corretamente?"/>
+    <VBox id = "TituloClientevbox">
+      <Button id = "TituloClientePedido" text="✅ Pedido certo" press=".onClienteOk"/>
+      <Button id = "TituloClientePedido2" text="❌ Pedido errado" press=".onClienteFalha"/>
+      <Button id = "TituloClientePedido3" text="🧱 Pedido quebrado" press=".onClienteFalha"/>
+      <Button id = "TituloClienteCLiente" text="🤔 Outros" press=".onClienteFalha"/>
+    </VBox>
+  </Dialog>
+</core:FragmentDefinition>

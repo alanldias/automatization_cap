@@ -6,6 +6,9 @@ sap.ui.define([
   "use strict";
 
   let oSimulador;               // timer global
+  let iEntAtual = 0;
+  let simuladorPausado = false;
+  let entregasConfirmadas = new Set(); // ← novo
 
   return Controller.extend("distribuicao.controller.ViewConsultarEntrega", {
 
@@ -157,54 +160,53 @@ sap.ui.define([
       ).addTo(this._leafletMap);
 
       let iStep = 0;
-      let iEnt = 0;
       const nSteps = aSteps.length;
-      const nEnts = this._aRastreios.length;
       const MAX_METROS = 50;                     // ≤ 30 m considera “chegou”
 
       /* Helper distância em metros */
       const dist = (c1, c2) => L.latLng(c1[0], c1[1]).distanceTo(L.latLng(c2[0], c2[1]));
 
       oSimulador = setInterval(async () => {
-        if (iStep >= nSteps) {             // chegou ao fim da polyline
+        // ▶️ se estiver pausado, não anda
+        if (simuladorPausado) return;
+      
+        if (iStep >= nSteps) {
           clearInterval(oSimulador);
           console.log("[SIM] terminou a rota, iStep>=nSteps");
           return;
         }
-
-        /* Move para próximo ponto */
-        const step = aSteps[iStep];
+      
+        const step      = aSteps[iStep];
         const idxTarget = step.way_points[1];
-        const coord = aLatLngs[idxTarget];     // [lat, lon]
-        const destAtual = this._aDestinos[iEnt];   // [lat, lon]
-
-        console.log(`[SIM] step ${iStep}/${nSteps - 1}  pos ${coord}  destino#${iEnt}`, destAtual);
-
+        const coord     = aLatLngs[idxTarget];          // [lat, lon]
+        const destAtual = this._aDestinos[iEntAtual];   // destino corrente
+      
+        console.log(
+          `[SIM] step ${iStep}/${nSteps - 1}  pos ${coord}  destino#${iEntAtual}`,
+          destAtual
+        );
+      
+        // move o caminhão
         if (oMarker.slideTo) oMarker.slideTo(coord, { duration: 1000 });
-        else oMarker.setLatLng(coord);
-
+        else                 oMarker.setLatLng(coord);
+      
         sap.m.MessageToast.show(`➡️ ${step.instruction}`, { duration: 1500 });
-
-        /* Chegou? (≤ 30 m) */
-        if (destAtual && dist(coord, destAtual) <= MAX_METROS) {
-          console.log(`[SIM] >> Chegou na entrega ${iEnt + 1} dist=${dist(coord, destAtual).toFixed(1)} m`);
-
-          /* 1. Marca ENTREGUE p/ rastreio corrente */
-          await this._atualizarStatus(this._aRastreios[iEnt], "ENTREGUE");
-          console.log("[SIM] Rast.", this._aRastreios[iEnt], "ENTREGUE");
-
-          iEnt++;
-
-          /* 2. Se tem mais, põe próxima em EM_TRANSITO */
-          if (iEnt < nEnts) {
-            await this._atualizarStatus(this._aRastreios[iEnt], "EM_TRANSITO");
-            console.log("[SIM] Próximo rast.", this._aRastreios[iEnt], "EM_TRANSITO");
-          } else {
-            this._showEntregaToast("agora mesmo");
-            console.log("[SIM] Todas as entregas concluídas!");
-          }
+      
+        // chegou?
+        if (
+          destAtual &&
+          dist(coord, destAtual) <= MAX_METROS &&
+          !entregasConfirmadas.has(iEntAtual)
+        ) {
+          console.log(
+            `[SIM] >> Chegou na entrega ${iEntAtual + 1} dist=${dist(coord, destAtual).toFixed(1)} m`
+          );
+      
+          simuladorPausado = true;            // 🛑 pausa caminhão
+          entregasConfirmadas.add(iEntAtual); // evita repetir
+          this._mostrarFragmentEntregador(iEntAtual);
         }
-
+      
         iStep++;
       }, 500);
     },
@@ -229,7 +231,87 @@ sap.ui.define([
         ? `✅ Pedido já foi entregue às ${sPeriodoHora}`
         : "✅ Entrega concluída!";
       MessageToast.show(txt, { duration: 4000 });
-    }
+    },
 
+    _mostrarFragmentEntregador: function (iEnt) {
+      this._entregaAtual = iEnt;
+    
+      if (!this._oFragmentEntregador) {
+        sap.ui.core.Fragment.load({
+          id: this.getView().getId(),
+          name: "distribuicao.view.Fragments.FragmentEntregador",
+          controller: this
+        }).then(oDialog => {
+          this._oFragmentEntregador = oDialog;
+          this.getView().addDependent(oDialog);
+          oDialog.open();
+        });
+      } else {
+        this._oFragmentEntregador.open();
+      }
+    },
+    
+    onEntregadorConfirmado: function () {
+      MessageBox.confirm("Confirmar que o pedido foi entregue?", {
+        onClose: async sAction => {
+          if (sAction === "OK") {
+            this._oFragmentEntregador.close();
+            await this._mostrarFragmentCliente(this._entregaAtual);
+          }
+        }
+      });
+    },
+    
+    onEntregadorFalha: function () {
+      MessageBox.error("Entrega marcada como falha. Simulação encerrada.");
+      this._oFragmentEntregador.close();
+      if (oSimulador) clearInterval(oSimulador);
+    },
+
+    ////////////////////////////////////////////////////////////////////////////
+    _mostrarFragmentCliente: async function (iEnt) {
+      this._entregaAtual = iEnt;
+    
+      if (!this._oFragmentCliente) {
+        this._oFragmentCliente = await sap.ui.core.Fragment.load({
+          id: this.getView().getId(),
+          name: "distribuicao.view.Fragments.FragmentCliente",
+          controller: this
+        });
+        this.getView().addDependent(this._oFragmentCliente);
+      }
+      this._oFragmentCliente.open();
+    },
+    
+    onClienteOk: async function () {
+      this._oFragmentCliente.close();
+    
+      const rastreio = this._aRastreios[iEntAtual];
+      await this._atualizarStatus(rastreio, "ENTREGUE");
+    
+      iEntAtual++;
+    
+      const nEnts = this._aRastreios.length;
+      if (iEntAtual < nEnts) {
+        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+        console.log(
+          "[SIM] Próximo rast.",
+          this._aRastreios[iEntAtual],
+          "EM_TRANSITO"
+        );
+      } else {
+        this._showEntregaToast("agora mesmo");
+        console.log("[SIM] Todas as entregas concluídas!");
+      }
+    
+      simuladorPausado = false;  // ▶️ retoma caminhão
+    },
+    
+    onClienteFalha: function () {
+      MessageBox.error("O cliente informou um problema. Simulação encerrada.");
+      this._oFragmentCliente.close();
+      if (oSimulador) clearInterval(oSimulador);
+    }
+    
   });
 });
