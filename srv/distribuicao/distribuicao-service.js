@@ -14,32 +14,32 @@ module.exports = async function (srv) {
     const tx = cds.tx(req);
     let { pedidos } = req.data;
 
-  // 2️⃣ caso não haja array ⇒ tenta o formato “antigo” OU o formato via rota
-  if (!Array.isArray(pedidos)) {
-    const {
-      pedidoID,             // chamado diretamente pela UI5 em versões antigas
-      codigo,               // vindo da rota (envio-pedido/.../:codigo/:cep/:numero)
-      cepDestino,           // versão antiga
-      cep,                  // versão atual
-      numero
-    } = req.data;
+    // 2️⃣ caso não haja array ⇒ tenta o formato “antigo” OU o formato via rota
+    if (!Array.isArray(pedidos)) {
+      const {
+        pedidoID,             // chamado diretamente pela UI5 em versões antigas
+        codigo,               // vindo da rota (envio-pedido/.../:codigo/:cep/:numero)
+        cepDestino,           // versão antiga
+        cep,                  // versão atual
+        numero
+      } = req.data;
 
-    const idPedido = pedidoID || codigo;        // aceita qualquer um
-    const cepFinal = cepDestino || cep;         // idem
+      const idPedido = pedidoID || codigo;        // aceita qualquer um
+      const cepFinal = cepDestino || cep;         // idem
 
-    if (idPedido && cepFinal) {
-      pedidos = [{
-        pedidoID: idPedido,
-        cep     : cepFinal,
-        numero  : numero || "S/N"
-      }];
+      if (idPedido && cepFinal) {
+        pedidos = [{
+          pedidoID: idPedido,
+          cep: cepFinal,
+          numero: numero || "S/N"
+        }];
+      }
     }
-  }
 
-  // 3️⃣ valida
-  if (!Array.isArray(pedidos) || pedidos.length === 0) {
-    return { success: false, message: "Nenhum pedido informado." };
-  }
+    // 3️⃣ valida
+    if (!Array.isArray(pedidos) || pedidos.length === 0) {
+      return { success: false, message: "Nenhum pedido informado." };
+    }
 
     /** ---------------------------------------------------------------
      * 1. Descobre o Estado (UF) de cada pedido – evita chamadas repetidas
@@ -132,11 +132,11 @@ module.exports = async function (srv) {
 
       const rastreioBase = `R${Math.trunc(Math.random() * 1_000_000)}`;
       const rastreioCodes = resultado.pedidosOrdenados
-                       .map(p => `${rastreioBase}-${p.pedidoID}`);
+        .map(p => `${rastreioBase}-${p.pedidoID}`);
 
 
       for (const [idx, p] of resultado.pedidosOrdenados.entries()) {
-    await tx.run(INSERT.into(Entrega).entries({
+        await tx.run(INSERT.into(Entrega).entries({
           pedidoID: p.pedidoID,
           clienteNome: "Cliente Simulado",
           cepDestino: p.cep || "MULTIPONTO",
@@ -149,7 +149,7 @@ module.exports = async function (srv) {
           destinos: JSON.stringify(resultado.destinos),
           transportadora: cd.nome,
           sequenciaRastreios: JSON.stringify(rastreioCodes),   // 👈 grava array
-          rastreio        : rastreioCodes[idx],
+          rastreio: rastreioCodes[idx],
           statusEntrega: "CRIADA",
           dataEnvio: new Date(),
           veiculo_ID: veiculo.ID,
@@ -185,7 +185,7 @@ module.exports = async function (srv) {
       message: 'Dados encontrados',
       geometry: entrega.rotaGeometry,
       etapasRota: entrega.etapasRota,
-      destinos      : entrega.destinos,
+      destinos: entrega.destinos,
       sequenciaRastreios: entrega.sequenciaRastreios,
       statusEntrega: entrega.statusEntrega,
       horarioEntrega: entrega.horarioEntrega,
@@ -226,7 +226,7 @@ module.exports = async function (srv) {
       success: true,
       message: `Status alterado para ${novoStatus}`,
       horarioEntrega,
-      pedidoID       : entrega.pedidoID        
+      pedidoID: entrega.pedidoID
     };
   });
 
@@ -234,24 +234,83 @@ module.exports = async function (srv) {
   srv.on('atualizarStatusPedidos', async req => {
     const { pedidos, novoStatus } = req.data;
     const tx = cds.tx(req);
-  
+
     if (!pedidos || pedidos.length === 0) {
       return { success: false, message: 'Nenhum pedido fornecido.', atualizados: 0 };
     }
-  
+
     const result = await tx.run(
       UPDATE(PedidosProntosEntrega)
         .set({ status: novoStatus }) // 👈 agora é dinâmico
         .where({ pedidoID: { in: pedidos } })
     );
-  
+
     return {
       success: true,
       message: `${result} pedido(s) atualizado(s) para ${novoStatus}.`,
       atualizados: result
     };
   });
-  
-  
 
+  srv.on('confirmarEntregaOk', async (req) => {
+    const { codigo } = req.data;
+    const tx = cds.tx(req);
+
+    const entrega = await tx.run(SELECT.one.from(Entrega).where({ rastreio: codigo }));
+    if (!entrega) return { success: false, message: "Entrega não encontrada." };
+
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    const horarioEntrega = `${PERIOD(now.getHours())}-${h}:${m}`;
+
+    await tx.run(
+      UPDATE(Entrega).set({
+        statusEntrega: 'ENTREGUE',
+        horarioEntrega,
+      }).where({ ID: entrega.ID })
+    );
+
+    if (entrega.pedidoID) {
+      await tx.run(
+        UPDATE(PedidosProntosEntrega).set({
+          status: 'FINALIZADO'
+        }).where({ pedidoID: entrega.pedidoID })
+      );
+    }
+
+    return {
+      success: true,
+      message: "Entrega marcada como ENTREGUE",
+      horarioEntrega
+    };
+  });
+
+  srv.on('reagendarEntrega', async (req) => {
+    const { codigo } = req.data;
+    const tx = cds.tx(req);
+
+    const entrega = await tx.run(SELECT.one.from(Entrega).where({ rastreio: codigo }));
+    if (!entrega) return { success: false, message: "Entrega não encontrada." };
+
+    await tx.run(
+      UPDATE(Entrega).set({
+        statusEntrega: 'REAGENDAR'
+      }).where({ ID: entrega.ID })
+    );
+
+    if (!entrega.pedidoID) return { success: false, message: "PedidoID não encontrado na entrega." };
+
+    await tx.run(
+      UPDATE(PedidosProntosEntrega).set({
+        status: 'PRONTO'
+      }).where({ pedidoID: entrega.pedidoID })
+    );
+
+    return {
+      success: true,
+      message: "Entrega reagendada e pedido voltou para a fila.",
+      pedidoID: entrega.pedidoID
+    };
+  });
 };

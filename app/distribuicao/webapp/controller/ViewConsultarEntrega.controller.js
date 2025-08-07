@@ -227,48 +227,33 @@ sap.ui.define([
     onEntregadorFalhaClienteNaoEstava: async function () {
       const oModel   = this.getView().getModel();
       const rastreio = this._aRastreios[iEntAtual];
-    
-      try {
-        /* 1. Reagenda a entrega --------------------------------------- */
-        const oCtx1 = oModel.bindContext("/atualizarStatusEntrega(...)")
-          .setParameter("codigo",     rastreio)
-          .setParameter("novoStatus", "REAGENDAR");
-        await oCtx1.execute();
-        const res1 = await oCtx1.requestObject();   // { success, horarioEntrega, pedidoID }
-    
-        if (!res1.success) throw new Error(res1.message || "Erro ao reagendar entrega");
-        const pedidoID = res1.pedidoID;             // ← veio direto do backend
-        if (!pedidoID)  throw new Error("PedidoID não retornado pela entrega");
-    
-        /* 2. Devolve o pedido para a fila ------------------------------ */
-        const oCtx2 = oModel.bindContext("/atualizarStatusPedidos(...)")
-          .setParameter("pedidos",    [pedidoID])   // precisa ser array
-          .setParameter("novoStatus", "PRONTO");
-        await oCtx2.execute();
-        const res2 = await oCtx2.requestObject();
-        if (!res2.success) throw new Error(res2.message || "Erro ao reverter status do pedido");
-    
-        MessageToast.show("Entrega reagendada. Pedido voltou para fila.");
-    
-        /* 3. Fecha popup e continua simulação ------------------------- */
-        this._oFragmentEntregador.close();
-    
-        iEntAtual++;
-        const nEnts = this._aRastreios.length;
-    
-        if (iEntAtual < nEnts) {
-          await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
-          console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
-        } else {
-          this._showEntregaToast("agora mesmo");
-          console.log("[SIM] Todas as entregas concluídas!");
-        }
-    
-        simuladorPausado = false;   // ▶️ retoma caminhão
-    
-      } catch (err) {
-        MessageBox.error(err.message || "Erro ao reagendar entrega.");
+
+      const oCtx = oModel.bindContext("/reagendarEntrega(...)")
+        .setParameter("codigo", rastreio);
+      await oCtx.execute();
+      const res = await oCtx.requestObject();
+
+      if (!res.success) {
+        MessageBox.error(res.message || "Erro ao reagendar entrega.");
+        return;
       }
+
+      MessageToast.show("Entrega reagendada. Pedido voltou para fila.");
+
+      this._oFragmentEntregador.close();
+
+      iEntAtual++;
+      const nEnts = this._aRastreios.length;
+
+      if (iEntAtual < nEnts) {
+        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+        console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
+      } else {
+        this._showEntregaToast("agora mesmo");
+        console.log("[SIM] Todas as entregas concluídas!");
+      }
+
+      simuladorPausado = false;
     },    
     
     onEntregadorFalha: function () {
@@ -279,49 +264,33 @@ sap.ui.define([
 
     onClienteOk: async function () {
       this._oFragmentCliente.close();
-    
+
       const oModel   = this.getView().getModel();
       const rastreio = this._aRastreios[iEntAtual];
-    
-      /* 1. Marca a entrega como ENTREGUE ------------------------------- */
-      const oCtxEnt = oModel.bindContext("/atualizarStatusEntrega(...)")
-        .setParameter("codigo",     rastreio)
-        .setParameter("novoStatus", "ENTREGUE");
-      await oCtxEnt.execute();
-      const resEnt = await oCtxEnt.requestObject();   // { success, message, pedidoID }
-      if (!resEnt.success) {
-        sap.m.MessageBox.error(resEnt.message);
+
+      const oCtx = oModel.bindContext("/confirmarEntregaOk(...)")
+        .setParameter("codigo", rastreio);
+      await oCtx.execute();
+      const res = await oCtx.requestObject();
+
+      if (!res.success) {
+        MessageBox.error(res.message || "Erro ao confirmar entrega.");
         return;
       }
-      const pedidoID = resEnt.pedidoID;               // veio do backend
-    
-      /* 2. Marca o pedido como FINALIZADO ------------------------------ */
-      if (pedidoID) {
-        const oCtxPed = oModel.bindContext("/atualizarStatusPedidos(...)")
-          .setParameter("pedidos",    [pedidoID])     // array de UUID
-          .setParameter("novoStatus", "FINALIZADO");
-        await oCtxPed.execute();
-        const resPed = await oCtxPed.requestObject();
-        if (!resPed.success) {
-          sap.m.MessageBox.error(resPed.message || "Erro ao finalizar pedido");
-          return;
-        }
-      }
-    
-      /* 3. Prossegue com a simulação ---------------------------------- */
+
       iEntAtual++;
       const nEnts = this._aRastreios.length;
-    
+
       if (iEntAtual < nEnts) {
         await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
         console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
       } else {
-        this._showEntregaToast("agora mesmo");
+        this._showEntregaToast(res.horarioEntrega || "agora mesmo");
         console.log("[SIM] Todas as entregas concluídas!");
       }
-    
-      simuladorPausado = false;   // ▶️ retoma caminhão
-    },    
+
+      simuladorPausado = false;
+    },
 
     onClienteFalha: function () {
       MessageBox.error("O cliente informou um problema. Simulação encerrada.");
