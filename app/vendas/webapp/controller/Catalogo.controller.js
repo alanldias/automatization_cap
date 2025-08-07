@@ -16,7 +16,8 @@ sap.ui.define([
                 .execute()
                 .then(() => {
                     sap.m.MessageToast.show(`Produto "${oItem.nome}" adicionado ao carrinho!`);
-                    this.getView().getModel().refresh();
+                    sap.ui.getCore().getEventBus()
+                        .publish("CartChannel", "CartUpdated");
                 })
                 .catch((err) => {
                     console.error(err);

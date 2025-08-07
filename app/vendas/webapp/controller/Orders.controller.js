@@ -74,8 +74,20 @@ sap.ui.define([
             oDialog.open();
         },
 
+        /* Navegação de retorno */
         onNavBack: function () {
-            this.getOwnerComponent().getRouter().navTo("Catalogo");
-        }
+            this.getOwnerComponent().getRouter()
+                .navTo("RouteCatalogo", {}, true);
+        },
+
+        /* Formata a cor (state) do ObjectStatus */
+        formatOrderStatusState: function (sStatus) {
+            switch (sStatus) {
+                case "Pago":      return "Success";
+                case "Pendente":  return "Warning";
+                case "Cancelado": return "Error";
+                default:          return "None";
+            }
+        },
     });
 });

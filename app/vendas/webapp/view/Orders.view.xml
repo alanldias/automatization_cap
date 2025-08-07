@@ -3,20 +3,94 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
 
-    <Page id="ordersPage" title="Meus Pedidos">
+    <!-- Página de Pedidos -->
+    <Page
+        id="ordersPage"
+        showHeader="true"
+        title="">         <!-- título será exibido no customHeader -->
+
+        <!-- Cabeçalho personalizado -->
+        <customHeader>
+            <Bar id="barOrdersHeader" design="Auto">
+
+                <!-- Botão Voltar + Logo -->
+                <contentLeft>
+                    <Image
+                        id="imgLogoOrders"
+                        src="img/logo.png"
+                        height="40px"
+                        densityAware="false"
+                        decorative="false" />
+                </contentLeft>
+
+                <!-- Título -->
+                <contentMiddle>
+                    <Title
+                        id="titleOrdersHeader"
+                        text="Meus Pedidos"
+                        level="H2" />
+                </contentMiddle>
+
+                <!-- Espaço para futuros ícones -->
+                <contentRight>
+                    <Button
+                        id="btnBackToCatalogFromOrders"
+                        icon="sap-icon://nav-back"
+                        type="Transparent"
+                        press=".onNavBack" />
+                    <ToolbarSpacer id="spOrdersHeaderRight" />
+                </contentRight>
+            </Bar>
+        </customHeader>
+
+        <!-- Conteúdo -->
         <content>
-            <List id="ordersList" items="{ path: '/Pedidos' }">
-                <CustomListItem id="orderListItem">
-                    <HBox id="orderHBox" justifyContent="SpaceBetween" alignItems="Center">
-                        <VBox id="orderVBox">
-                            <Text id="txtOrderID" text="Pedido ID: {ID}" />
-                            <Text id="txtOrderStatus" text="Status: {status}" />
-                            <Text id="txtOrderTotal" text="Total: R$ {total}" />
-                            <Text id="txtOrderDate" text="Data: {dataPedido}" />
+            <List
+                id="ordersList"
+                inset="false"
+                items="{ path: '/Pedidos' }">
+                
+                <CustomListItem id="orderListItem" class="orderItem">
+                    <HBox
+                        id="orderHBox"
+                        alignItems="Center"
+                        justifyContent="SpaceBetween">
+
+                        <!-- Bloco de informações -->
+                        <VBox id="orderVBox" class="orderInfoBox">
+                            <Text
+                                id="txtOrderID"
+                                text="Pedido #{ID}"
+                                class="orderIdText" />
+
+                            <!-- Status com cor contextual -->
+                            <ObjectStatus
+                                id="statusOrder"
+                                text="{status}"
+                                state="{
+                                    path: 'status',
+                                    formatter: '.formatOrderStatusState'
+                                }" />
+
+                            <!-- Total -->
+                            <ObjectNumber
+                                id="numOrderTotal"
+                                number="{total}"
+                                unit="R$"
+                                class="orderTotal" />
+
+                            <!-- Data -->
+                            <Text
+                                id="txtOrderDate"
+                                text="{ path: 'dataPedido', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }"
+                                class="orderDate" />
                         </VBox>
+
+                        <!-- Botão Pagar -->
                         <Button
                             id="btnOrderPay"
                             text="Pagar"
+                            icon="sap-icon://credit-card"
                             type="Accept"
                             press=".onPay"
                             enabled="{= ${status} !== 'Pago' }" />
@@ -24,10 +98,15 @@
                 </CustomListItem>
             </List>
         </content>
+
+        <!-- Rodapé (apenas botão voltar)  -->
         <footer>
             <Toolbar id="ordersToolbar">
                 <ToolbarSpacer id="ordersToolbarSpacer" />
-                <Button id="btnOrdersBack" text="Voltar" press=".onNavBack" />
+                <Button
+                    id="btnOrdersBack"
+                    text="Voltar"
+                    press=".onNavBack" />
             </Toolbar>
         </footer>
     </Page>

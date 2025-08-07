@@ -3,47 +3,115 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
 
-    <Page id="cartPage" title="Carrinho">
+    <!-- Página do Carrinho -->
+    <Page
+        id="cartPage"
+        showHeader="true"
+        title="">
+
+        <!-- Cabeçalho personalizado -->
+        <customHeader>
+            <Bar id="barCartHeader" design="Auto">
+                <contentLeft>
+                    <Image
+                        id="imgLogoCart"
+                        src="img/logo.png"
+                        height="40px"
+                        densityAware="false"
+                        decorative="false" />
+                </contentLeft>
+
+                <contentMiddle>
+                    <Title
+                        id="titleCartHeader"
+                        text="Carrinho"
+                        level="H2" />
+                </contentMiddle>
+
+                <contentRight>
+                    <Button
+                        id="btnBackToCatalog"
+                        icon="sap-icon://nav-back"
+                        type="Transparent"
+                        press=".onNavBack" />
+                    <ToolbarSpacer id="spHeaderRightCart" />
+                </contentRight>
+            </Bar>
+        </customHeader>
+
+        <!-- Conteúdo -->
         <content>
             <List id="cartList" items="{ path: '/CarrinhoItem' }">
-                <CustomListItem id="cartListItem">
-                    <HBox id="cartHBox" alignItems="Center" justifyContent="SpaceBetween" class="cartItem">
+            <CustomListItem id="cartListItem">
+                <!-- Linha do carrinho -->
+                <HBox
+                    id="cartHBox"
+                    alignItems="Center"
+                    justifyContent="Start"         
+                    class="cartItem">
 
-                        <!-- Imagem -->
-                        <Image
-                            id="imgCartProduct"
-                            src="{produto/imagem}"
-                            width="80px"
-                            height="80px"
-                            densityAware="false"
-                            decorative="false"
-                            class="cartImage" />
+                    <!-- Imagem -->
+                    <Image
+                        id="imgCartProduct"
+                        src="{produto/imagem}"
+                        width="80px"
+                        height="80px"
+                        densityAware="false"
+                        decorative="false"
+                        class="cartImage" />
 
-                        <!-- Informações -->
-                        <VBox id="cartVBox" class="sapUiSmallMarginBegin">
-                            <Text id="txtCartProductName" text="{produto/nome}" class="cartProductName" />
-                            <Text id="txtCartProductDesc" text="{produto/descricao}" wrapping="true" class="cartProductDesc" />
-                            <ObjectNumber id="numCartProductPrice" number="{precoUnitario}" unit="R$" class="cartPrice" />
-                            <Text id="txtCartQuantity" text="Qtd: {quantidade}" />
-                        </VBox>
+                    <!-- Textos (cresce e empurra o bloco final) -->
+                    <VBox
+                        id="cartVBox"
+                        class="cartTextContainer"    
+                        >
+                        <layoutData>
+                            <FlexItemData id="teste" growFactor="1" />  <!-- ocupa espaço livre -->
+                        </layoutData>
 
-                        <!-- Botão Remover -->
+                        <Text id="txtCartProductName" text="{produto/nome}"  class="cartProductName"/>
+                        <Text id="txtCartProductDesc"  text="{produto/descricao}" wrapping="true" class="cartProductDesc"/>
+                        <Text id="txtCartQuantity"     text="Qtd: {quantidade}"/>
+                    </VBox>
+
+                    <!-- Preço + botão (fixo à direita) -->
+                    <HBox
+                        id="priceRemoveHBox"
+                        alignItems="Center"
+                        class="priceRemoveBox">
+                        
+                        <ObjectNumber
+                            id="numCartProductPrice"
+                            number="{precoUnitario}"
+                            unit="R$"
+                            class="cartPrice"/>
+                        
                         <Button
                             id="btnRemoveFromCart"
                             icon="sap-icon://delete"
                             type="Reject"
                             class="btnRemove"
-                            press=".onRemoveFromCart" />
+                            press=".onRemoveFromCart"/>
                     </HBox>
-                </CustomListItem>
-            </List>
+                </HBox>
+            </CustomListItem>
+        </List>
+
         </content>
 
+        <!-- Rodapé -->
         <footer>
             <Toolbar id="cartToolbar">
-                <Text id="txtCartTotal" text="Total: R$ 0,00" class="cartPrice" />
+                <Text
+                    id="txtCartTotal"
+                    text="Total: R$ 0,00"
+                    class="cartPrice" />
                 <ToolbarSpacer id="cartToolbarSpacer" />
-                <Button id="btnCheckout" text="Finalizar Pedido" press=".onCheckout" type="Emphasized" />
+                <Button
+                    id="btnCheckout"
+                    text="Finalizar Pedido"
+                    press=".onCheckout"
+                    type="Emphasized" />
             </Toolbar>
         </footer>
     </Page>

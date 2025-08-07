@@ -3,5 +3,50 @@
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    background-color: white;
+    background-color: #fff;
+}
+
+.cardBody > *:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+.cardFooter > .sapMObjectNumber {
+    margin-bottom: 4px;
+}
+/* Imagem e textos mais próximos */
+.cartTextContainer {
+    margin-left: 10px;            /* diminui distância entre imagem e textos */
+}
+
+/* Espaçamento entre preço e botão */
+.priceRemoveBox > .sapMObjectNumber {
+    margin-right: 10px;           /* afasta o preço do botão remover */
+}
+
+/* Espaço à direita do botão remover para não grudar na borda */
+.btnRemove {
+    margin-right: 10px;           /* “folga” no final do botão */
+}
+.cartImage{
+    margin-left: 10px;
+}
+/* Menor distância entre linhas dentro da célula */
+.orderInfoBox > *:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+/* Peso visual do ID */
+.orderIdText {
+    font-weight: bold;
+}
+
+/* Cor destacada do valor total */
+.orderTotal {
+    font-size: 1.1rem;
+}
+
+/* Espaço extra ao redor de cada item */
+.orderItem {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e5e5e5;  /* linha sutil de separação */
 }

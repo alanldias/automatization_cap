@@ -7,6 +7,9 @@ sap.ui.define([
 
     return Controller.extend("vendas.controller.Cart", {
         onInit: function () {
+            sap.ui.getCore().getEventBus()
+                .subscribe("CartChannel", "CartUpdated",
+                    this._onCartUpdated, this);
             // Modelo JSON para dados locais da view
             const oViewModel = new JSONModel({
                 totalCarrinho: "Total: R$ 0,00"
@@ -21,6 +24,20 @@ sap.ui.define([
                     oBinding.attachDataReceived(() => this._calcularTotal());
                 }
             }
+        },
+
+        _onCartUpdated: function () {
+            const oList = this.byId("cartList");
+            if (oList) {
+                // OData V4 → refresh() sem parâmetros
+                oList.getBinding("items").refresh();   // ← sem bForceUpdate
+            }
+        },
+        
+
+        onNavBack: function () {
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteCatalogo", {}, true);
         },
 
         _calcularTotal: function () {
@@ -44,8 +61,7 @@ sap.ui.define([
                 .execute()
                 .then(() => {
                     MessageToast.show(`Item "${oItem.produto.nome}" removido do carrinho.`);
-                    this._calcularTotal(); // recalcular total
-                    oModel.refresh();
+                    oModel.refresh(); // ✅ Atualiza a lista no front
                 })
                 .catch((err) => {
                     console.error(err);
@@ -63,6 +79,8 @@ sap.ui.define([
                 .then(() => {
                     MessageToast.show("Pedido finalizado com sucesso!");
                     oModel.refresh(); // ✅ limpa carrinho no front
+                    this.getOwnerComponent().getRouter()
+                        .navTo("Orders", {}, true);   // true = substitui no histórico
                 })
                 .catch((err) => {
                     console.error(err);

@@ -3,64 +3,110 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
 
-    <Page id="catalogPage" title="Catálogo de Produtos">
+    <!-- Página principal -->
+    <Page id="catalogPage" showHeader="true" title="Catálogo de Produtos">
+        <customHeader>
+        <Bar id="barCatalogHeader" design="Auto">
+            
+            <!-- LOGO à esquerda -->
+            <contentLeft>
+                <Image
+                    id="imgLogoLeft"
+                    src="img/logo.png"
+                    
+                    height="40px"
+                    densityAware="false"
+                    decorative="false" />
+            </contentLeft>
+
+            <!-- Título central -->
+            <contentMiddle>
+                <Title
+                    id="titleCatalogHeader"
+                    text="Catálogo de Produtos"
+                    level="H2" />
+            </contentMiddle>
+            
+            <!-- Espaçador para futuro botão, perfil etc. -->
+            <contentRight>
+                <ToolbarSpacer id="spHeaderRight"/>
+            </contentRight>
+        </Bar>
+    </customHeader>
         <content>
+            <!-- FlexBox que renderiza os cards de produto -->
             <FlexBox
                 id="productFlexBox"
                 wrap="Wrap"
                 justifyContent="Start"
-                items="{
-                    path: '/Produtos'
-                }">
+                items="{ path: '/Produtos' }">
+
                 <items>
+                    <!-- CARD -->
                     <VBox
                         id="productCard"
                         class="sapUiSmallMargin cardStyle"
-                        width="200px">
-                        <!-- Imagem do produto -->
-                        <Image
-                            id="imgProduct"
-                            src="{imagem}"
-                            width="100%"
-                            height="150px"
-                            densityAware="false"
-                            decorative="false" />
+                        width="200px"
+                        height="330px"
+                        justifyContent="SpaceBetween">
 
-                        <!-- Nome -->
-                        <Title
-                            id="titleProductName"
-                            text="{nome}"
-                            wrapping="true"
-                            level="H4" />
+                        <!-- Bloco superior -->
+                        <VBox
+                            id="productCardBody"
+                            class="cardBody"
+                            >
+                            
+                            <Image
+                                id="imgProduct"
+                                src="{imagem}"
+                                width="100%"
+                                height="140px"
+                                densityAware="false"
+                                decorative="false" />
 
-                        <!-- Descrição -->
-                        <Text
-                            id="txtProductDesc"
-                            text="{descricao}"
-                            wrapping="true" />
+                            <Title
+                                id="titleProductName"
+                                text="{nome}"
+                                level="H4"
+                                wrapping="true" />
 
-                        <!-- Preço -->
-                        <ObjectNumber
-                            id="numProductPrice"
-                            unit="R$"
-                            number="{preco}"
-                             />
+                            <Text
+                                id="txtProductDesc"
+                                text="{descricao}"
+                                wrapping="true" />
+                        </VBox>
 
-                        <!-- Botão adicionar -->
-                        <Button
-                            id="btnAddToCart"
-                            text="Adicionar"
-                            type="Emphasized"
-                            press=".onAddToCart" />
+                        <!-- Rodapé fixo -->
+                        <VBox
+                            id="productCardFooter"
+                            class="cardFooter"
+                            alignItems="Stretch"
+                            width="100%">
+                            
+                            <ObjectNumber
+                                id="numProductPrice"
+                                unit="R$"
+                                number="{preco}" />
+
+                            <Button
+                                id="btnAddToCart"
+                                text="Adicionar"
+                                type="Emphasized"
+                                press=".onAddToCart" />
+                        </VBox>
                     </VBox>
                 </items>
             </FlexBox>
         </content>
 
+        <!-- Barra de navegação inferior -->
         <footer>
             <Toolbar id="catalogToolbar">
                 <ToolbarSpacer id="catalogToolbarSpacer" />
-                <Button id="btnGoToCart" text="Ver Carrinho" press=".onGoToCart" />
+                <Button
+                    id="btnGoToCart"
+                    text="Ver Carrinho"
+                    press=".onGoToCart" />
             </Toolbar>
         </footer>
     </Page>

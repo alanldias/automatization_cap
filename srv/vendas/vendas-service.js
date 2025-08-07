@@ -184,11 +184,5 @@ module.exports = cds.service.impl(function () {
       
         return { value : valor }          //  ←  sempre nesse formato
       })
-      
-    
-    
-    
-  
-  
-
+                                                                                              
 });
