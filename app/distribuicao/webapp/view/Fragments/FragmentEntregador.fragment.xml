@@ -3,7 +3,7 @@
     <Text id = "TituloEntregador" text="Selecione a situação da entrega:"/>
     <VBox id = "TituloEntregadorVbox">
       <Button id = "TituloEntregadorPedido" text="✅ Pedido entregue" press=".onEntregadorConfirmado"/>
-      <Button id = "TituloEntregadorCliente" text="🚫 Cliente não estava" press=".onEntregadorFalha"/>
+      <Button id = "TituloEntregadorCliente" text="🚫 Cliente não estava" press=".onEntregadorFalhaClienteNaoEstava"/>
       <Button id = "TituloEntregadorCliente2" text="❓ Cliente não reconhece o pedido" press=".onEntregadorFalha"/>
       <Button id = "TituloEntregadorEndereco" text="📍 Endereço não encontrado" press=".onEntregadorFalha"/>
     </VBox>

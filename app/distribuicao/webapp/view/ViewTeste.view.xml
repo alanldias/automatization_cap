@@ -1,21 +1,57 @@
-<mvc:View controllerName="distribuicao.controller.ViewTeste"
-    displayBlock="true"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
+<mvc:View
+ controllerName="distribuicao.controller.ViewTeste"
+ xmlns:mvc="sap.ui.core.mvc"
+ xmlns="sap.m"
+ xmlns:core="sap.ui.core"
+ id="viewAgruparPedidos">  
+ <VBox class="sapUiSmallMargin" id="vboxPrincipal">  
+  <Toolbar id="toolbarPedidos">
+   <Title id="tituloPedidos" text="Pedidos Prontos para Entrega"/>
+   <ToolbarSpacer id ="viewteste"/>
+   <Button id="btnJuntarPedidos" text="Juntar Pedidos" press=".onAbrirFragmentoAgrupamento" icon="sap-icon://multi-select"/>
+  </Toolbar>
 
-    <Page title="Teste de Envio"
-    id = "testeenviopedido">
-        <content>
-            <Button 
-                text="Enviar Pedido" 
-                press=".onPressEnviarPedido" 
-                id="lasda9213"/>
+  <Table
+   id="tabelaPedidos"
+   items="{
+    path: '/PedidosProntosEntrega',
+    filters: [
+    {
+    path: 'estado',
+    operator: 'EQ',
+    value1: 'PR'
+    },
+    {
+    path: 'status',
+    operator: 'EQ',
+    value1: 'PRONTO'
+    }
+    ]
+    }"
+   mode="None"
+   growing="true"
+   growingThreshold="10">
 
-                 <Button 
-                text="Enviar Pedido" 
-                press=".onPressEnviarVariosPedidos" 
-                id="lasda9213213"/>
-        </content>
-    </Page>
+   <columns>
+    <Column id="colPedidoId"><Text id="txtColPedidoID" text="Pedido ID"/></Column>
+    <Column id="colCEP"><Text id="txtColCEP" text="CEP"/></Column>
+    <Column id="colNumero"><Text id="txtColNumero" text="Número"/></Column>
+    <Column id="colCidade"><Text id="txtColCidade" text="Cidade"/></Column>
+    <Column id="colEstado"><Text id="txtColEstado" text="Estado"/></Column>
+   </columns>
+
+   <items>
+    <ColumnListItem id="itemListaPedidos">
+     <cells>
+      <Text id="txtPedidoID" text="{pedidoID}"/>
+      <Text id="txtCEP" text="{cep}"/>
+      <Text id="txtNumero" text="{numero}"/>
+      <Text id="txtCidade" text="{cidade}"/>
+      <Text id="txtEstado" text="{estado}"/>
+     </cells>
+    </ColumnListItem>
+   </items>
+  </Table>
+ </VBox>
 
 </mvc:View>

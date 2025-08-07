@@ -64,3 +64,21 @@ entity Veiculo : cuid, managed {
 
     centro     : Association to CentroDistribuicao;
 }
+
+entity PedidosProntosEntrega {
+  key pedidoID   : UUID;
+      clienteNome: String;
+      cep        : String;
+      numero     : String;
+      cidade     : String;
+      estado     : String;
+      centro     : Association to CentroDistribuicao; // ← associação com o centro
+      status     : String enum {
+        PRONTO;
+        SELECIONADO;
+        ENVIADO;
+        FINALIZADO;
+      };
+}
+
+

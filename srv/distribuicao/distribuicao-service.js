@@ -5,7 +5,7 @@ const selecionarVeiculoEcd = require('./utils/selecionarVeiculo');
 const cds = require('@sap/cds');
 
 module.exports = async function (srv) {
-  const { Entrega, Veiculo } = srv.entities;
+  const { Entrega, Veiculo, PedidosProntosEntrega } = srv.entities;
 
   const PERIOD = h => (h >= 8 && h < 12) ? 'Manha' : (h >= 12 && h < 18) ? 'Tarde' : 'Noite';
 
@@ -225,8 +225,33 @@ module.exports = async function (srv) {
     return {
       success: true,
       message: `Status alterado para ${novoStatus}`,
-      horarioEntrega
+      horarioEntrega,
+      pedidoID       : entrega.pedidoID        
     };
   });
+
+
+  srv.on('atualizarStatusPedidos', async req => {
+    const { pedidos, novoStatus } = req.data;
+    const tx = cds.tx(req);
+  
+    if (!pedidos || pedidos.length === 0) {
+      return { success: false, message: 'Nenhum pedido fornecido.', atualizados: 0 };
+    }
+  
+    const result = await tx.run(
+      UPDATE(PedidosProntosEntrega)
+        .set({ status: novoStatus }) // 👈 agora é dinâmico
+        .where({ pedidoID: { in: pedidos } })
+    );
+  
+    return {
+      success: true,
+      message: `${result} pedido(s) atualizado(s) para ${novoStatus}.`,
+      atualizados: result
+    };
+  });
+  
+  
 
 };
