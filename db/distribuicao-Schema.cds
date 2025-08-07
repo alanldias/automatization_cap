@@ -81,4 +81,16 @@ entity PedidosProntosEntrega {
       };
 }
 
+entity OcorrenciasEntrega {
+  key ID           : UUID;
+  pedido         : Association to PedidosProntosEntrega;   // ← sem FK explícito
+  tipo             : String;        // ex: PEDIDO_ERRADO, ENDERECO_INVALIDO
+  observacao       : String;
+  dataOcorrencia   : DateTime;
+  criadoPor        : String;
+}
+
+
+
+
 

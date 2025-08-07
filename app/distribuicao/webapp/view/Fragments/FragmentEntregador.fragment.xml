@@ -4,8 +4,20 @@
     <VBox id = "TituloEntregadorVbox">
       <Button id = "TituloEntregadorPedido" text="✅ Pedido entregue" press=".onEntregadorConfirmado"/>
       <Button id = "TituloEntregadorCliente" text="🚫 Cliente não estava" press=".onEntregadorFalhaClienteNaoEstava"/>
-      <Button id = "TituloEntregadorCliente2" text="❓ Cliente não reconhece o pedido" press=".onEntregadorFalha"/>
-      <Button id = "TituloEntregadorEndereco" text="📍 Endereço não encontrado" press=".onEntregadorFalha"/>
+     <Button text="❓ Cliente não reconhece o pedido"
+        id = "TituloEntregadorPedidoErro"
+        press=".onEntregadorFalha">
+    <customData>
+      <core:CustomData key="tipoOcorrencia" value="CLIENTE_DESCONHECE" writeToDom="false"/>
+    </customData>
+    </Button>
+      <Button text="📍 Endereço não encontrado"
+              id = "TituloEntregadorPedidoErro2"
+              press=".onEntregadorFalha">
+        <customData>
+          <core:CustomData key="tipoOcorrencia" value="ENDERECO_INVALIDO" writeToDom="false"/>
+        </customData>
+      </Button> 
     </VBox>
   </Dialog>
 </core:FragmentDefinition>

@@ -5,7 +5,7 @@ const selecionarVeiculoEcd = require('./utils/selecionarVeiculo');
 const cds = require('@sap/cds');
 
 module.exports = async function (srv) {
-  const { Entrega, Veiculo, PedidosProntosEntrega } = srv.entities;
+  const { Entrega, Veiculo, PedidosProntosEntrega, OcorrenciasEntrega  } = srv.entities;
 
   const PERIOD = h => (h >= 8 && h < 12) ? 'Manha' : (h >= 12 && h < 18) ? 'Tarde' : 'Noite';
 
@@ -313,4 +313,25 @@ module.exports = async function (srv) {
       pedidoID: entrega.pedidoID
     };
   });
+
+  srv.on('registrarOcorrencia', async req => {
+    const { codigo, tipo, observacao } = req.data;
+    const tx = cds.tx(req);
+  
+    const entrega = await tx.run(
+      SELECT.one.from('Entrega').where({ rastreio: codigo })
+    );
+    if (!entrega) return { success: false, message: 'Entrega não encontrada' };
+  
+    await INSERT.into('OcorrenciasEntrega').entries({
+      ID              : cds.utils.uuid(),
+      pedido_pedidoID : entrega.pedidoID,   // 👈 usa o nome certo
+      tipo,
+      observacao,
+      dataOcorrencia  : new Date().toISOString(),
+      criadoPor       : 'frontend'
+    });
+  
+    return { success: true, message: 'Ocorrência registrada!' };
+  });  
 };

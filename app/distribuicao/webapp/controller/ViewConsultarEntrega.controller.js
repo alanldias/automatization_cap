@@ -292,11 +292,49 @@ sap.ui.define([
       simuladorPausado = false;
     },
 
-    onClienteFalha: function () {
-      MessageBox.error("O cliente informou um problema. Simulação encerrada.");
-      this._oFragmentCliente.close();
-      if (oSimulador) clearInterval(oSimulador);
+      /**  Cliente reportou problema (pedido errado, quebrado, etc.) */
+  onClienteFalha : async function (oEvent) {
+    const oBtn     = oEvent.getSource();
+    const sTipo    = oBtn.data("tipoOcorrencia");      // valor do CustomData
+    const rastreio = this._aRastreios[iEntAtual];
+    const oModel   = this.getView().getModel();
+
+    /* 1. Registra a ocorrência ------------------------------ */
+    const oCtxOcc = oModel.bindContext("/registrarOcorrencia(...)")
+      .setParameter("codigo",     rastreio)
+      .setParameter("tipo",       sTipo)
+      .setParameter("observacao", "");
+    await oCtxOcc.execute();
+    const resOcc = await oCtxOcc.requestObject();
+    if (!resOcc.success) {
+      sap.m.MessageBox.error(resOcc.message || "Erro ao registrar ocorrência.");
+      return;
     }
+
+    /* 2. Marca a entrega como FALHOU (se fizer sentido) ----- */
+    await this._atualizarStatus(rastreio, "FALHOU");
+
+    /* 3. Fecha o fragmento de cliente ----------------------- */
+    this._oFragmentCliente.close();
+    MessageToast.show("Ocorrência registrada – seguindo para a próxima entrega.");
+
+    /* 4. Avança para a próxima entrega ---------------------- */
+    iEntAtual++;
+    const nEnts = this._aRastreios.length;
+
+    if (iEntAtual < nEnts) {
+      await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+      console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
+    } else {
+      this._showEntregaToast("rota encerrada (falha registrada)");
+      console.log("[SIM] Todas as entregas concluídas / com ocorrências!");
+    }
+
+    simuladorPausado = false;        // ▶️ retoma o caminhão
+  }
+
+    
+    
 
   });
 });

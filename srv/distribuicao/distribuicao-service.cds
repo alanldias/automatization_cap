@@ -9,6 +9,9 @@ service distribuicaoServico {
 
     entity PedidosProntosEntrega as projection on my.PedidosProntosEntrega;
 
+    entity OcorrenciasEntrega as projection on my.OcorrenciasEntrega;
+
+
     type PedidoInput {
         pedidoID : UUID;
         cep      : String;
@@ -57,6 +60,23 @@ service distribuicaoServico {
         success  : Boolean;
         message  : String;
         pedidoID : UUID;
+    };
+
+    type TipoOcorrencia : String enum {
+    PEDIDO_ERRADO;
+    PEDIDO_QUEBRADO;
+    CLIENTE_DESCONHECE;
+    ENDERECO_INVALIDO;
+    OUTROS;
+    }
+
+    action registrarOcorrencia(
+    codigo     : String,          // rastreio
+    tipo       : TipoOcorrencia,
+    observacao : String
+    ) returns {
+    success : Boolean;
+    message : String;
     };
 
 }

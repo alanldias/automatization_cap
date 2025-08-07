@@ -3,9 +3,39 @@
     <Text id = "TituloCliente" text="O pedido chegou corretamente?"/>
     <VBox id = "TituloClientevbox">
       <Button id = "TituloClientePedido" text="✅ Pedido certo" press=".onClienteOk"/>
-      <Button id = "TituloClientePedido2" text="❌ Pedido errado" press=".onClienteFalha"/>
-      <Button id = "TituloClientePedido3" text="🧱 Pedido quebrado" press=".onClienteFalha"/>
-      <Button id = "TituloClienteCLiente" text="🤔 Outros" press=".onClienteFalha"/>
+      <!-- CLIENTE -->
+  <Button text="❌ Pedido errado"
+  id = "TituloClientePedido2"
+          press=".onClienteFalha">
+    <customData>
+      <core:CustomData key="tipoOcorrencia" value="PEDIDO_ERRADO" writeToDom="false"/>
+    </customData>
+  </Button>
+
+  <Button text="🧱 Pedido quebrado"
+  id = "TituloClientePedido3"
+          press=".onClienteFalha">
+    <customData>
+      <core:CustomData key="tipoOcorrencia" value="PEDIDO_QUEBRADO" writeToDom="false"/>
+    </customData>
+  </Button>
+
+  <Button text="📍 Endereço errado"
+  id = "TituloClientePedido4"
+          press=".onClienteFalha">
+    <customData>
+      <core:CustomData key="tipoOcorrencia" value="ENDERECO_INVALIDO" writeToDom="false"/>
+    </customData>
+  </Button>
+
+  <Button text="🤔 Outros"
+  id = "TituloClientePedido5"
+          press=".onClienteFalha">
+    <customData>
+      <core:CustomData key="tipoOcorrencia" value="OUTROS" writeToDom="false"/>
+    </customData>
+  </Button>
+
     </VBox>
   </Dialog>
 </core:FragmentDefinition>
