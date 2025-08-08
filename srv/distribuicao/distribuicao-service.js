@@ -2,74 +2,52 @@ const buscarEndereco = require('./utils/buscarEndereco');
 const buscarCoords = require('./utils/buscarCoordenadas');
 const calcularRota = require('./utils/calcularRotasORS');
 const selecionarVeiculoEcd = require('./utils/selecionarVeiculo');
+const calcularRotaMultipla= require('./utils/calcularRotaMultipla');
 const cds = require('@sap/cds');
 
 module.exports = async function (srv) {
-  const { Entrega, Veiculo, PedidosProntosEntrega, OcorrenciasEntrega  } = srv.entities;
+  const { Entrega, Veiculo, PedidosProntosEntrega, OcorrenciasEntrega } = srv.entities;
 
   const PERIOD = h => (h >= 8 && h < 12) ? 'Manha' : (h >= 12 && h < 18) ? 'Tarde' : 'Noite';
 
-  // ---------- ACTION criar -----------
+  // ---------- ACTION criar entrega -----------
   srv.on("realizarEntrega", async req => {
     const tx = cds.tx(req);
     let { pedidos } = req.data;
 
-    // 2️⃣ caso não haja array ⇒ tenta o formato “antigo” OU o formato via rota
+    // 2️⃣ compat: aceita formatos antigos
     if (!Array.isArray(pedidos)) {
-      const {
-        pedidoID,             // chamado diretamente pela UI5 em versões antigas
-        codigo,               // vindo da rota (envio-pedido/.../:codigo/:cep/:numero)
-        cepDestino,           // versão antiga
-        cep,                  // versão atual
-        numero
-      } = req.data;
-
-      const idPedido = pedidoID || codigo;        // aceita qualquer um
-      const cepFinal = cepDestino || cep;         // idem
-
+      const { pedidoID, codigo, cepDestino, cep, numero } = req.data;
+      const idPedido = pedidoID || codigo;
+      const cepFinal = cepDestino || cep;
       if (idPedido && cepFinal) {
-        pedidos = [{
-          pedidoID: idPedido,
-          cep: cepFinal,
-          numero: numero || "S/N"
-        }];
+        pedidos = [{ pedidoID: idPedido, cep: cepFinal, numero: numero || "S/N" }];
       }
     }
 
-    // 3️⃣ valida
     if (!Array.isArray(pedidos) || pedidos.length === 0) {
       return { success: false, message: "Nenhum pedido informado." };
     }
 
-    /** ---------------------------------------------------------------
-     * 1. Descobre o Estado (UF) de cada pedido – evita chamadas repetidas
-     * -------------------------------------------------------------- */
+    /** 1) Descobre UF por CEP (cache simples) */
     const cacheCEP = new Map();
     const pedidosComUF = [];
     for (const p of pedidos) {
       if (!cacheCEP.has(p.cep)) {
-        const end = await buscarEndereco(p.cep);      // ViaCEP
-        cacheCEP.set(p.cep, end.estado);              // ex.: "PR"
+        const end = await buscarEndereco(p.cep); // ViaCEP
+        cacheCEP.set(p.cep, end.estado);
       }
       pedidosComUF.push({ ...p, estado: cacheCEP.get(p.cep) });
     }
 
-    /** ---------------------------------------------------------------
-     * 2. Agrupa pedidos por estado – um CD por UF
-     * -------------------------------------------------------------- */
+    /** 2) Agrupa por UF */
     const gruposPorUF = {};
-    for (const p of pedidosComUF) {
-      (gruposPorUF[p.estado] ||= []).push(p);
-    }
+    for (const p of pedidosComUF) (gruposPorUF[p.estado] ||= []).push(p);
 
     const respostas = [];
 
-    /** ---------------------------------------------------------------
-     * 3. Processa cada estado separadamente
-     * -------------------------------------------------------------- */
+    /** 3) Processa por UF */
     for (const [estado, lista] of Object.entries(gruposPorUF)) {
-
-      // Seleciona o CD e o veículo adequados para essa UF
       const selecao = await selecionarVeiculoEcd(estado);
       if (!selecao) {
         respostas.push({ success: false, message: `Nenhum veículo disponível em ${estado}` });
@@ -77,13 +55,13 @@ module.exports = async function (srv) {
       }
       const { veiculo, cd } = selecao;
 
-      /* ---------- 3.1 Apenas 1 pedido ⇒ rota simples ---------- */
+      /* 3.1 Um pedido → rota simples */
       if (lista.length === 1) {
         const { pedidoID, cep, numero } = lista[0];
 
-        const end = await buscarEndereco(cep);
+        const end     = await buscarEndereco(cep);
         const destino = await buscarCoords(`${end.rua} ${numero}, ${end.cidade}, ${end.estado}, ${cep}`);
-        const origem = cd.lat
+        const origem  = cd.lat
           ? { lat: cd.lat, lon: cd.lon }
           : await buscarCoords(`${cd.endereco}, ${cd.cidade}, ${cd.estado}`);
 
@@ -113,66 +91,99 @@ module.exports = async function (srv) {
         respostas.push({
           success: true,
           message: `Entrega criada a partir do CD ${cd.nome}`,
-          geometry,
-          steps,
-          rastreio
+          geometry, steps, rastreio
         });
         continue;
       }
 
-      /* ---------- 3.2 Vários pedidos ⇒ rota múltipla otimizada ---------- */
-      const calcularRotaMultipla = require("./utils/calcularRotaMultipla");
-      const resultado = await calcularRotaMultipla(lista, cd);
-      if (!resultado.success) {
-        respostas.push(resultado);
+      /* 3.2 Vários pedidos → rota múltipla (tolerante a falhas por pedido) */
+      const result = await calcularRotaMultipla(lista, cd);
+      // result = { success, pedidosOrdenados, geometry, steps, destinos, distanceKm, falhas }
+
+      // Se nada sobrou válido nesse estado
+      if (!result.success || result.pedidosOrdenados.length === 0) {
+        // Espelha falhas no "armazém" (opcional, mas útil)
+        if (result.falhas?.length) {
+          const idsFalha = result.falhas.map(f => f.pedidoID).filter(Boolean);
+          if (idsFalha.length) {
+            await tx.run(
+              UPDATE(PedidosProntosEntrega)
+                .set({ status: 'COM_PROBLEMAS', descricaoProblema: 'ROTA/GEOCODING_FALHOU' })
+                .where({ pedidoID: { in: idsFalha } })
+            );
+          }
+        }
+
+        respostas.push({
+          success: false,
+          message: `Nenhuma entrega criada em ${estado}.`,
+          falhas: result.falhas || []
+        });
         continue;
       }
 
-      console.log("retorno do multiplo", resultado)
+      const rastreioBase  = `R${Math.trunc(Math.random() * 1_000_000)}`;
+      const rastreioCodes = result.pedidosOrdenados.map(p => `${rastreioBase}-${p.pedidoID}`);
 
-      const rastreioBase = `R${Math.trunc(Math.random() * 1_000_000)}`;
-      const rastreioCodes = resultado.pedidosOrdenados
-        .map(p => `${rastreioBase}-${p.pedidoID}`);
-
-
-      for (const [idx, p] of resultado.pedidosOrdenados.entries()) {
-        await tx.run(INSERT.into(Entrega).entries({
-          pedidoID: p.pedidoID,
-          clienteNome: "Cliente Simulado",
-          cepDestino: p.cep || "MULTIPONTO",
-          cidadeDestino: "-",
-          estadoDestino: estado,
-          enderecoCompleto: "-",
-          distanciaKm: "-",          // opcional: calc total
-          rotaGeometry: resultado.geometry,
-          etapasRota: JSON.stringify(resultado.steps),
-          destinos: JSON.stringify(resultado.destinos),
-          transportadora: cd.nome,
-          sequenciaRastreios: JSON.stringify(rastreioCodes),   // 👈 grava array
-          rastreio: rastreioCodes[idx],
-          statusEntrega: "CRIADA",
-          dataEnvio: new Date(),
-          veiculo_ID: veiculo.ID,
-          centroDistribuicao_ID: cd.ID
-        }));
+      let criadas = 0;
+      for (const [idx, p] of result.pedidosOrdenados.entries()) {
+        try {
+          await tx.run(INSERT.into(Entrega).entries({
+            pedidoID: p.pedidoID,
+            clienteNome: "Cliente Simulado",
+            cepDestino: p.cep || "MULTIPONTO",
+            cidadeDestino: p.end?.cidade || "-",
+            estadoDestino: estado,
+            enderecoCompleto: p.end?.enderecoCompleto || "-",
+            distanciaKm: result.distanceKm ?? "-",             // total ou '-'
+            rotaGeometry: result.geometry,
+            etapasRota: JSON.stringify(result.steps),
+            destinos: JSON.stringify(result.destinos),
+            transportadora: cd.nome,
+            sequenciaRastreios: JSON.stringify(rastreioCodes),
+            rastreio: rastreioCodes[idx],
+            statusEntrega: "CRIADA",
+            dataEnvio: new Date(),
+            veiculo_ID: veiculo.ID,
+            centroDistribuicao_ID: cd.ID
+          }));
+          criadas++;
+        } catch (e) {
+          // Marca a falha deste pedido em memória pra responder
+          result.falhas.push({ pedidoID: p.pedidoID, motivo: e.message || 'Falha ao inserir entrega' });
+        }
       }
 
-      await tx.run(UPDATE(Veiculo).set({ emUso: true, status: "EmRota" }).where({ ID: veiculo.ID }));
+      // Atualiza veículo só se criou algo
+      if (criadas > 0) {
+        await tx.run(UPDATE(Veiculo).set({ emUso: true, status: "EmRota" }).where({ ID: veiculo.ID }));
+      }
+
+      // Espelha falhas no "armazém"
+      if (result.falhas?.length) {
+        const idsFalha = result.falhas.map(f => f.pedidoID).filter(Boolean);
+        if (idsFalha.length) {
+          await tx.run(
+            UPDATE(PedidosProntosEntrega)
+              .set({ status: 'COM_PROBLEMAS', descricaoProblema: 'ROTA/INSERCAO_FALHOU' })
+              .where({ pedidoID: { in: idsFalha } })
+          );
+        }
+      }
 
       respostas.push({
-        success: true,
-        message: `Entregas (${lista.length}) criadas a partir do CD ${cd.nome} (rota otimizada)`,
-        geometry: resultado.geometry,
-        steps: resultado.steps
+        success: criadas > 0 && !(result.falhas?.length),
+        message: `Criadas ${criadas}/${lista.length} entregas a partir do CD ${cd.nome} (rota otimizada, tolerante a falhas).`,
+        geometry: result.geometry,
+        steps: result.steps,
+        destinos: result.destinos,
+        distanceKm: result.distanceKm,
+        falhas: result.falhas || []
       });
-    } // fim loop estados
+    }
 
-    /** ---------------------------------------------------------------
-     * 4. Retorno consolidado
-     * -------------------------------------------------------------- */
-    return respostas.length === 1
-      ? respostas[0]                       // só um estado
-      : { success: true, resultados: respostas };
+    /** 4) Retorno consolidado */
+    return respostas.length === 1 ? respostas[0] : { success: true, resultados: respostas };
   });
 
   // ---------- ACTION rastrear -----------
@@ -315,23 +326,43 @@ module.exports = async function (srv) {
   });
 
   srv.on('registrarOcorrencia', async req => {
-    const { codigo, tipo, observacao } = req.data;
-    const tx = cds.tx(req);
-  
+    const { codigo, tipo, observacao } = req.data
+    const tx = cds.tx(req)                           // transação reusável
+
+    /* 1. Busca a entrega pelo código de rastreio ------------------------ */
     const entrega = await tx.run(
-      SELECT.one.from('Entrega').where({ rastreio: codigo })
-    );
-    if (!entrega) return { success: false, message: 'Entrega não encontrada' };
-  
-    await INSERT.into('OcorrenciasEntrega').entries({
-      ID              : cds.utils.uuid(),
-      pedido_pedidoID : entrega.pedidoID,   // 👈 usa o nome certo
+      SELECT.one.from(Entrega).where({ rastreio: codigo })
+    )
+    if (!entrega) return { success: false, message: 'Entrega não encontrada' }
+
+    /* 2. Registra a ocorrência ----------------------------------------- */
+    await INSERT.into(OcorrenciasEntrega).entries({
+      ID: cds.utils.uuid(),
+      pedido_pedidoID: entrega.pedidoID,
       tipo,
       observacao,
-      dataOcorrencia  : new Date().toISOString(),
-      criadoPor       : 'frontend'
-    });
-  
-    return { success: true, message: 'Ocorrência registrada!' };
-  });  
+      dataOcorrencia: new Date().toISOString(),
+      criadoPor: req.user?.id || 'frontend'
+    })
+
+    /* 3. Atualiza a própria entrega ------------------------------------ */
+    await UPDATE(Entrega)
+      .set({
+        status: 'COM_PROBLEMAS',
+        descricaoProblema: tipo          // ou use "observacao"
+      })
+      .where({ ID: entrega.ID })
+
+    /* 4. Espelha no “armazém” ------------------------------------------ */
+    await UPDATE(PedidosProntosEntrega)
+      .set({
+        status: 'COM_PROBLEMAS',
+        descricaoProblema: tipo          // mesmo motivo
+      })
+      .where({ pedidoID: entrega.pedidoID })
+
+    /* 5. Done ----------------------------------------------------------- */
+    return { success: true, message: 'Ocorrência registrada!' }
+  });
+
 };

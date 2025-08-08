@@ -1,7 +1,8 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageToast",
-  "sap/m/MessageBox"
+  "sap/m/MessageBox",
+
 ], (Controller, MessageToast, MessageBox) => {
   "use strict";
 
@@ -25,7 +26,6 @@ sap.ui.define([
       this.byId("inputCodigo").setValue(sCodigo);
       if (sCodigo) this.onBotaoPress();
     },
-
     onBotaoPress: async function () {
       const oModel = this.getView().getModel();
       const sCodigo = this.byId("inputCodigo").getValue().trim();
@@ -256,11 +256,11 @@ sap.ui.define([
       simuladorPausado = false;
     },    
     
-    onEntregadorFalha: function () {
-      MessageBox.error("Entrega marcada como falha. Simulação encerrada.");
-      this._oFragmentEntregador.close();
-      if (oSimulador) clearInterval(oSimulador);
-    },
+    // onEntregadorFalha: function () {
+    //   MessageBox.error("Entrega marcada como falha. Simulação encerrada.");
+    //   this._oFragmentEntregador.close();
+    //   if (oSimulador) clearInterval(oSimulador);
+    // },
 
     onClienteOk: async function () {
       this._oFragmentCliente.close();
@@ -312,7 +312,7 @@ sap.ui.define([
     }
 
     /* 2. Marca a entrega como FALHOU (se fizer sentido) ----- */
-    await this._atualizarStatus(rastreio, "FALHOU");
+    await this._atualizarStatus(rastreio, "COM_PROBLEMAS")
 
     /* 3. Fecha o fragmento de cliente ----------------------- */
     this._oFragmentCliente.close();

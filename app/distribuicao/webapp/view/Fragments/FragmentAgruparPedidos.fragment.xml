@@ -1,87 +1,70 @@
 <core:FragmentDefinition
- xmlns="sap.m"
- xmlns:core="sap.ui.core"
- xmlns:table="sap.ui.table"
- xmlns:smartTable="sap.ui.comp.smarttable"
- xmlns:mvc="sap.ui.core.mvc">
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:mvc="sap.ui.core.mvc">
 
- <Dialog
-  id="dialogAgrupar"
-  title="Selecionar Pedidos para Agrupamento"
-  contentWidth="700px"
-  contentHeight="400px"
-  draggable="true"
-  resizable="true">
+  <Dialog
+    id="dialogAgrupar"
+    title="Selecionar Pedidos para Agrupamento"
+    contentWidth="700px"
+    contentHeight="400px"
+    draggable="true"
+    resizable="true">
 
-  <VBox id="vboxDialog">
-    <Button id = "btnConfirmarSelecionar3" text="Selecionar 3 pedidos automaticamente" press=".onSelecionarTresPedidos" icon="sap-icon://sys-find" />
+    <VBox id="vboxDialog">
+      <Button id="btnConfirmarSelecionar3"
+              text="Selecionar 3 pedidos automaticamente"
+              press=".onSelecionarTresPedidos"
+              icon="sap-icon://sys-find" />
 
-   <Table
-    id="tblPedidosParaAgrupar"
-    inset="false"
-    mode="None"
-    selectionChange=".onPedidoSelecionado"
-    items="{
-    path: '/PedidosProntosEntrega',
-    sorter: { path: 'cidade', descending: false },
-    filters: [
-    {
-    path: 'status',
-    operator: 'EQ',
-    value1: 'PRONTO'
-    }
-    ]
-    }">
-    <columns>
-    <Column id ="checkbox" width="3em"></Column> <!-- coluna para checkbox -->
-     <Column id="colDialogPedidoID">
-      <Text id="txtColDialogPedidoID" text="Pedido ID" />
-     </Column>
-     <Column id="colDialogCEP">
-      <Text id="txtColDialogCEP" text="CEP" />
-     </Column>
-     <Column id="colDialogNumero">
-      <Text id="txtColDialogNumero" text="Número" />
-     </Column>
-     <Column id="colDialogCidade">
-      <Text id="txtColDialogCidade" text="Cidade" />
-     </Column>
-     <Column id="colDialogEstado">
-      <Text id="txtColDialogEstado" text="Estado" />
-     </Column>
-    </columns>
+      <Table id="tblPedidosParaAgrupar"
+             inset="false"
+             mode="None"
+             noDataText="Sem pedidos para o centro selecionado.">
+        <columns>
+          <Column id="colChk" width="3em" />
+          <Column id="colDialogPedidoID"><Text id="txtColDialogPedidoID" text="Pedido ID" /></Column>
+          <Column id="colDialogCEP"><Text id="txtColDialogCEP" text="CEP" /></Column>
+          <Column id="colDialogNumero"><Text id="txtColDialogNumero" text="Número" /></Column>
+          <Column id="colDialogCidade"><Text id="txtColDialogCidade" text="Cidade" /></Column>
+          <Column id="colDialogEstado"><Text id="txtColDialogEstado" text="Estado" /></Column>
+        </columns>
 
-    <items>
-     <ColumnListItem id="itemListaDialogPedidos">
-      <cells>
-          <CheckBox
-                id="algoaglo"
-                select=".onPedidoCheckboxSelecionado"
-                selected="{
-                    parts : [
-                        { path : 'pedidoID',                targetType : 'any' },
-                        { path : 'selecao>/selectedKeys',   targetType : 'any' }
-                    ],
-                    formatter : '.isPedidoSelecionado'
-                }"
-            />
-         <Text id="txtDialogPedidoID" text="{pedidoID}" />
-       <Text id="txtDialogCEP" text="{cep}" />
-       <Text id="txtDialogNumero" text="{numero}" />
-       <Text id="txtDialogCidade" text="{cidade}" />
-       <Text id="txtDialogEstado" text="{estado}" />
-      </cells>
-     </ColumnListItem>
-    </items>
-   </Table>
-  </VBox>
+        <!-- Template sem binding; o controller faz o bind e clone -->
+        <items>
+          <ColumnListItem id="itemListaDialogPedidos">
+            <cells>
+              <CheckBox id="chkSelPedido"
+                        select=".onPedidoCheckboxSelecionado"
+                        selected="{
+                          parts: [
+                            { path: 'pedidoID',              targetType: 'any' },
+                            { path: 'selecao>/selectedKeys', targetType: 'any' }
+                          ],
+                          formatter: '.isPedidoSelecionado'
+                        }"/>
+              <Text id="txtDialogPedidoID" text="{pedidoID}" />
+              <Text id="txtDialogCEP"      text="{cep}" />
+              <Text id="txtDialogNumero"   text="{numero}" />
+              <Text id="txtDialogCidade"   text="{cidade}" />
+              <Text id="txtDialogEstado"   text="{estado}" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </VBox>
 
-  <beginButton>
-   <Button id="btnConfirmarAgrupamento" text="Confirmar" type="Emphasized" press=".onConfirmarAgrupamento" />
-  </beginButton>
-  <endButton>
-   <Button id="btnCancelarAgrupamento" text="Cancelar" press=".onCancelarAgrupamento" />
-  </endButton>
-  
- </Dialog>
+    <beginButton>
+      <Button id="btnConfirmarAgrupamento"
+              text="Confirmar"
+              type="Emphasized"
+              press=".onConfirmarAgrupamento" />
+    </beginButton>
+    <endButton>
+      <Button id="btnCancelarAgrupamento"
+              text="Cancelar"
+              press=".onCancelarAgrupamento" />
+    </endButton>
+
+  </Dialog>
 </core:FragmentDefinition>

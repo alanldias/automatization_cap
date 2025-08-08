@@ -2,16 +2,33 @@ sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/core/Fragment",
   "sap/m/MessageBox",
-  "sap/m/MessageToast"
-], function(Controller, Fragment, MessageBox, MessageToast) {
+  "sap/m/MessageToast",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator",
+  "sap/ui/model/json/JSONModel",
+  "sap/ui/model/Sorter",
+
+], function(Controller, Fragment, MessageBox, MessageToast,  Filter, FilterOperator, JSONModel, Sorter) {
   "use strict";
 
   return Controller.extend("distribuicao.controller.ViewTeste", {
     onInit: function () {
+      const oTbl = this.byId("tblPedidos");
+      oTbl.setNoDataText("Selecione seu centro de distribuição");
       this._oSelecionados = [];
+      this._sortCidadeDesc = false;  // começa asc
+
     },
 
     onAbrirFragmentoAgrupamento: async function () {
+      // 0) Centro selecionado
+      const sCentroId = this.byId("cbCentro").getSelectedKey();
+      if (!sCentroId) {
+        MessageBox.warning("Selecione um centro de distribuição primeiro.");
+        return;
+      }
+
+      // 1) Carrega fragmento (uma vez)
       if (!this._oFragmentAgrupamento) {
         this._oFragmentAgrupamento = await Fragment.load({
           name: "distribuicao.view.Fragments.FragmentAgruparPedidos",
@@ -20,81 +37,105 @@ sap.ui.define([
         });
         this.getView().addDependent(this._oFragmentAgrupamento);
       }
-    
-      // Cria model auxiliar para controle de checkbox
-      const oSelecaoModel = new sap.ui.model.json.JSONModel({});
+
+      // 2) Model auxiliar para seleção
+      const oSelecaoModel = new JSONModel({ selectedKeys: {} });
       this.getView().setModel(oSelecaoModel, "selecao");
-    
+
+      // 3) Zera seleção em memória
       this._oSelecionados = [];
+
+      // 4) Abre o dialog
       this._oFragmentAgrupamento.open();
-    },    
+
+      // 5) Bind/Filter da tabela do fragmento por centro_ID
+      await this._bindPedidosParaAgruparPorCentro(sCentroId);
+    }, 
+    
+    _bindPedidosParaAgruparPorCentro: async function (sCentroId) {
+      const sFragId = this.getView().getId();
+      const oTable  = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
+      if (!oTable) return;
+    
+      // Primeiro bind: cria se ainda não existir
+      let oBinding = oTable.getBinding("items");
+      if (!oBinding) {
+        const oTemplate = sap.ui.core.Fragment.byId(sFragId, "itemListaDialogPedidos");
+        oTable.bindItems({
+          path: "/PedidosProntosEntrega",
+          template: oTemplate.clone() // evita conflito de IDs
+        });
+        oBinding = oTable.getBinding("items");
+      }
+    
+      // Filtros: centro + status PRONTO
+      const aFilters = [
+        new sap.ui.model.Filter({
+          path: "centro_ID",
+          operator: sap.ui.model.FilterOperator.EQ,
+          value1: sCentroId,
+          valueType: "Edm.Guid" // força guid'...' no $filter
+        }),
+        new sap.ui.model.Filter("status", sap.ui.model.FilterOperator.EQ, "PRONTO")
+      ];
+    
+      oBinding.filter(aFilters);
+      oTable.setNoDataText("Sem pedidos PRONTO para o centro selecionado.");
+    },
 
     onPedidoCheckboxSelecionado: function (oEvent) {
-      const oCheckBox = oEvent.getSource();
+      const oCheckBox    = oEvent.getSource();
       const bSelecionado = oEvent.getParameter("selected");
-      const oContext = oCheckBox.getBindingContext();
-      const oData = oContext.getObject();
-      const oSelecaoModel = this.getView().getModel("selecao");
-      const mSelected = oSelecaoModel.getProperty("/selectedKeys") || {};
-    
+      const oData        = oCheckBox.getBindingContext().getObject();
+      const oSelModel    = this.getView().getModel("selecao");
+      const mSelected    = oSelModel.getProperty("/selectedKeys") || {};
+
       if (bSelecionado) {
         if (this._oSelecionados.length >= 3) {
           MessageToast.show("Você só pode selecionar até 3 pedidos.");
-          oCheckBox.setSelected(false); // desfaz visual
+          oCheckBox.setSelected(false);
           return;
         }
-    
         this._oSelecionados.push(oData);
         mSelected[oData.pedidoID] = true;
       } else {
         this._oSelecionados = this._oSelecionados.filter(p => p.pedidoID !== oData.pedidoID);
         delete mSelected[oData.pedidoID];
       }
-    
-      oSelecaoModel.setProperty("/selectedKeys", mSelected);
-    },    
 
-    onSelecionarTresPedidos : function () {
+      oSelModel.setProperty("/selectedKeys", mSelected);
+    },
 
-      // 1. Acessa a tabela de forma correta
-      const sFragId = this.getView().getId();                              // mesmo ID usado no load
+    onSelecionarTresPedidos: function () {
+      const sFragId = this.getView().getId();
       const oTable  = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
-  
-      if (!oTable) {    // fragmento ainda não terminou de construir?
-          return MessageToast.show("Tabela ainda não carregada, tenta de novo 😉");
-      }
-  
+      if (!oTable) return MessageToast.show("Tabela ainda não carregada, tenta de novo 😉");
+
       const aItems = oTable.getItems();
-  
-      /* -------- limpa seleções -------- */
+
+      // limpa seleções
       this._oSelecionados = [];
       const oSelModel = this.getView().getModel("selecao");
-      oSelModel.setProperty("/selectedKeys", {});        // zera JSONModel
-  
+      oSelModel.setProperty("/selectedKeys", {});
       aItems.forEach(item => item.getCells()[0].setSelected(false));
-  
-      /* -------- agrupa por cidade -------- */
+
+      // agrupa por cidade e escolhe 3
       const mCidades = {};
       aItems.forEach(item => {
-          const oData   = item.getBindingContext().getObject();
-          const sCidade = oData.cidade;
-          (mCidades[sCidade] ||= []).push({ item, data : oData });
+        const oData = item.getBindingContext().getObject();
+        (mCidades[oData.cidade] ||= []).push({ item, data: oData });
       });
-  
-      /* --------- escolhe 3 --------- */
-      let aSelecionados = Object.values(mCidades)
-                           .find(arr => arr.length >= 3)?.slice(0,3) // 3 da mesma cidade
-                         || aItems.slice(0,3).map(item => ({         // ou 3 primeiros
-                               item, data : item.getBindingContext().getObject()
-                            }));
-  
-      /* -------- marca visual + model de seleção -------- */
+
+      const aSelecionados =
+        Object.values(mCidades).find(arr => arr.length >= 3)?.slice(0, 3)
+        || aItems.slice(0, 3).map(item => ({ item, data: item.getBindingContext().getObject() }));
+
       aSelecionados.forEach(sel => {
-          sel.item.getCells()[0].setSelected(true);
-          this._oSelecionados.push(sel.data);
-          oSelModel.setProperty(`/selectedKeys/${sel.data.pedidoID}`, true);
+        sel.item.getCells()[0].setSelected(true);
+        this._oSelecionados.push(sel.data);
+        oSelModel.setProperty(`/selectedKeys/${sel.data.pedidoID}`, true);
       });
-  },
+    },
 
     onConfirmarAgrupamento: async function () {
       if (this._oSelecionados.length === 0) {
@@ -125,7 +166,8 @@ sap.ui.define([
 
         // 2. Atualiza status para ENVIADO
         const oActionStatus = oModel.bindContext("/atualizarStatusPedidos(...)")
-      .setParameter("pedidos", aIds);
+      .setParameter("pedidos", aIds)
+      .setParameter("novoStatus", "SELECIONADO");    
         await oActionStatus.execute();
         const resStatus = await oActionStatus.requestObject();
 
@@ -151,6 +193,83 @@ sap.ui.define([
     },
     isPedidoSelecionado: function (sPedidoID, mSelectedKeys) {
       return !!mSelectedKeys?.[sPedidoID];
-    }
+    },
+
+    _getCentroSelecionado: function () {
+      return this.byId("cbCentro").getSelectedKey() || null;
+    },
+    
+    _getStatusSelecionados: function () {
+      return this.byId("mcbStatus").getSelectedKeys(); // array
+    },
+    
+    _bindTabelaSePreciso: function () {
+      const oTbl = this.byId("tblPedidos");
+      if (!oTbl.getBinding("items")) {
+        oTbl.bindItems({
+          path: "/PedidosProntosEntrega",
+          template: this.byId("itemTabelaPedidos").clone()
+        });
+      }
+      return oTbl.getBinding("items");
+    },
+    _applyFiltersAndSort: function () {
+      const oBinding = this._bindTabelaSePreciso();
+      if (!oBinding) return;
+    
+      const aFilters = [];
+    
+      // Centro (GUID)
+      const sCentroId = this._getCentroSelecionado();
+      if (sCentroId) {
+        aFilters.push(new Filter({
+          path: "centro_ID",
+          operator: FilterOperator.EQ,
+          value1: sCentroId,
+          valueType: "Edm.Guid"
+        }));
+      }
+    
+      // Status (OR entre selecionados)
+      const aStatus = this._getStatusSelecionados();
+      if (aStatus.length) {
+        const aOr = aStatus.map(st => new Filter("status", FilterOperator.EQ, st));
+        aFilters.push(new Filter({ filters: aOr, and: false })); // OR
+      }
+    
+      oBinding.filter(aFilters);
+    
+      // Sort por cidade
+      oBinding.sort([ new Sorter("cidade", this._sortCidadeDesc) ]);
+    
+      const oTbl = this.byId("tblPedidos");
+      if (!sCentroId) {
+        oTbl.setNoDataText("Selecione seu centro de distribuição");
+      } else if (!aStatus.length) {
+        oTbl.setNoDataText("Sem pedidos para o centro selecionado.");
+      } else {
+        oTbl.setNoDataText("Sem pedidos para o centro + status selecionados.");
+      }
+    },
+    onCentroChange: function () {
+      this._applyFiltersAndSort();
+    },
+    
+    onStatusChange: function () {
+      this._applyFiltersAndSort();
+    },
+    
+    onToggleSortCidade: function () {
+      this._sortCidadeDesc = !this._sortCidadeDesc; // alterna
+      this._applyFiltersAndSort();
+    },
+    
+    onLimparFiltros: function () {
+      this.byId("cbCentro").setSelectedKey("");
+      this.byId("mcbStatus").removeAllSelectedItems();
+      this._applyFiltersAndSort();
+      MessageToast.show("Filtros limpos.");
+    },    
+    
   });
 });

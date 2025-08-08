@@ -29,6 +29,7 @@ entity Entrega : cuid, managed {
       ENTREGUE;
       FALHOU;
       REAGENDAR;
+      COM_PROBLEMAS;
     };
     comprovanteGerado : Boolean default false;
     dataEnvio         : Date;
@@ -37,6 +38,7 @@ entity Entrega : cuid, managed {
     etapasRota         : Json;
     destinos     : LargeString;
     sequenciaRastreios  : LargeString;
+    descricaoProblema : String(80);
 }
 
 entity CentroDistribuicao : cuid {
@@ -78,7 +80,9 @@ entity PedidosProntosEntrega {
         SELECIONADO;
         ENVIADO;
         FINALIZADO;
+        COM_PROBLEMAS;
       };
+     descricaoProblema : String(80) default 'Sem problemas';
 }
 
 entity OcorrenciasEntrega {

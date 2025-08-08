@@ -1,57 +1,79 @@
 <mvc:View
- controllerName="distribuicao.controller.ViewTeste"
- xmlns:mvc="sap.ui.core.mvc"
- xmlns="sap.m"
- xmlns:core="sap.ui.core"
- id="viewAgruparPedidos">  
- <VBox class="sapUiSmallMargin" id="vboxPrincipal">  
-  <Toolbar id="toolbarPedidos">
-   <Title id="tituloPedidos" text="Pedidos Prontos para Entrega"/>
-   <ToolbarSpacer id ="viewteste"/>
-   <Button id="btnJuntarPedidos" text="Juntar Pedidos" press=".onAbrirFragmentoAgrupamento" icon="sap-icon://multi-select"/>
-  </Toolbar>
+  controllerName="distribuicao.controller.ViewTeste"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  id="viewArmazem">
 
-  <Table
-   id="tabelaPedidos"
-   items="{
-    path: '/PedidosProntosEntrega',
-    filters: [
-    {
-    path: 'estado',
-    operator: 'EQ',
-    value1: 'PR'
-    },
-    {
-    path: 'status',
-    operator: 'EQ',
-    value1: 'PRONTO'
-    }
-    ]
-    }"
-   mode="None"
-   growing="true"
-   growingThreshold="10">
+  <VBox class="sapUiSmallMargin" id="vboxPrincipal">
+    <HBox alignItems="Center" justifyContent="SpaceBetween" id="hboxFiltros">
+      <Title text="Pedidos prontos para expedição" level="H4" id="tituloPedidos"/>
+         <Button id="btnJuntarPedidos" text="Juntar Pedidos" press=".onAbrirFragmentoAgrupamento" icon="sap-icon://multi-select"/>
+         <MultiComboBox id="mcbStatus"
+               width="360px"
+               selectionChange=".onStatusChange"
+               placeholder="Filtrar por status">
+            <items>
+                <core:Item id = "itempronto" key="PRONTO"         text="PRONTO"/>
+                <core:Item id = "itemselecionado" key="SELECIONADO"    text="SELECIONADO"/>
+                <core:Item id = "itemenviado" key="ENVIADO"        text="ENVIADO"/>
+                <core:Item id = "itemFinalizado" key="FINALIZADO"     text="FINALIZADO"/>
+                <core:Item id = "itemComproblemas" key="COM_PROBLEMAS"  text="COM_PROBLEMAS"/>
+            </items>
+            </MultiComboBox>
+            <Button id="btnSortCidade"
+                    text="Ordenar por Cidade"
+                    tooltip="Alterna asc/desc"
+                    press=".onToggleSortCidade"
+                    icon="sap-icon://sort"/>
+      <HBox alignItems="Center" renderType="Bare" class="sapUiTinyMarginBegin" id="hboxCentro">
+        <Text text="Centro de distribuição:" class="sapUiTinyMarginEnd" id="txtCentro"/>
+        <ComboBox id="cbCentro"
+                  width="320px"
+                  placeholder="Selecione um centro"
+                  selectionChange=".onCentroChange"
+                  showSecondaryValues="false"
+                  items="{/CentroDistribuicao}">
+          <items>
+            <core:Item id="itemCentro"
+                       key="{ID}"
+                       text="{= ${nome} + ' — ' + ${cidade} + ' - ' + ${estado} }"/>
+          </items>
+          <layoutData>
+            <FlexItemData id="algo123213" growFactor="0"/>
+          </layoutData>
+        </ComboBox>
+      </HBox>
+    </HBox>
 
-   <columns>
-    <Column id="colPedidoId"><Text id="txtColPedidoID" text="Pedido ID"/></Column>
-    <Column id="colCEP"><Text id="txtColCEP" text="CEP"/></Column>
-    <Column id="colNumero"><Text id="txtColNumero" text="Número"/></Column>
-    <Column id="colCidade"><Text id="txtColCidade" text="Cidade"/></Column>
-    <Column id="colEstado"><Text id="txtColEstado" text="Estado"/></Column>
-   </columns>
+    <Table id="tblPedidos"
+           growing="true"
+           noDataText="Selecione seu centro de distribuição"
+           includeItemInSelection="true">
+      <columns>
+        <Column id="colPedido"><Text id="txtColPedido" text="Pedido"/></Column>
+        <Column id="colCliente"><Text id="txtColCliente" text="Cliente"/></Column>
+        <Column id="colCEP"><Text id="txtColCEP" text="CEP"/></Column>
+        <Column id="colNumero"><Text id="txtColNumero" text="Número"/></Column>
+        <Column id="colCidade"><Text id="txtColCidade" text="Cidade"/></Column>
+        <Column id="colUF"><Text id="txtColUF" text="UF"/></Column>
+        <Column id="colStatus"><Text id="txtColStatus" text="Status"/></Column>
+        <Column id="colProblema"><Text id="txtColProblema" text="Problema"/></Column>
+      </columns>
 
-   <items>
-    <ColumnListItem id="itemListaPedidos">
-     <cells>
-      <Text id="txtPedidoID" text="{pedidoID}"/>
-      <Text id="txtCEP" text="{cep}"/>
-      <Text id="txtNumero" text="{numero}"/>
-      <Text id="txtCidade" text="{cidade}"/>
-      <Text id="txtEstado" text="{estado}"/>
-     </cells>
-    </ColumnListItem>
-   </items>
-  </Table>
- </VBox>
-
+      <!-- Template com id; será clonado no bind programático -->
+      <items>
+        <ColumnListItem id="itemTabelaPedidos">
+          <ObjectIdentifier id="objIdPedido" title="{pedidoID}"/>
+          <ObjectIdentifier id="objIdCliente" title="{clienteNome}"/>
+          <Text id="txtCEP" text="{cep}"/>
+          <Text id="txtNumero" text="{numero}"/>
+          <Text id="txtCidade" text="{cidade}"/>
+          <Text id="txtUF" text="{estado}"/>
+          <ObjectStatus id="objStatus" text="{status}"/>
+          <Text id="txtProblema" text="{descricaoProblema}"/>
+        </ColumnListItem>
+      </items>
+    </Table>
+  </VBox>
 </mvc:View>
