@@ -8,7 +8,7 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Sorter",
 
-], function(Controller, Fragment, MessageBox, MessageToast,  Filter, FilterOperator, JSONModel, Sorter) {
+], function (Controller, Fragment, MessageBox, MessageToast, Filter, FilterOperator, JSONModel, Sorter) {
   "use strict";
 
   return Controller.extend("distribuicao.controller.ViewTeste", {
@@ -50,13 +50,13 @@ sap.ui.define([
 
       // 5) Bind/Filter da tabela do fragmento por centro_ID
       await this._bindPedidosParaAgruparPorCentro(sCentroId);
-    }, 
-    
+    },
+
     _bindPedidosParaAgruparPorCentro: async function (sCentroId) {
       const sFragId = this.getView().getId();
-      const oTable  = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
+      const oTable = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
       if (!oTable) return;
-    
+
       // Primeiro bind: cria se ainda não existir
       let oBinding = oTable.getBinding("items");
       if (!oBinding) {
@@ -67,7 +67,7 @@ sap.ui.define([
         });
         oBinding = oTable.getBinding("items");
       }
-    
+
       // Filtros: centro + status PRONTO
       const aFilters = [
         new sap.ui.model.Filter({
@@ -78,17 +78,17 @@ sap.ui.define([
         }),
         new sap.ui.model.Filter("status", sap.ui.model.FilterOperator.EQ, "PRONTO")
       ];
-    
+
       oBinding.filter(aFilters);
       oTable.setNoDataText("Sem pedidos PRONTO para o centro selecionado.");
     },
 
     onPedidoCheckboxSelecionado: function (oEvent) {
-      const oCheckBox    = oEvent.getSource();
+      const oCheckBox = oEvent.getSource();
       const bSelecionado = oEvent.getParameter("selected");
-      const oData        = oCheckBox.getBindingContext().getObject();
-      const oSelModel    = this.getView().getModel("selecao");
-      const mSelected    = oSelModel.getProperty("/selectedKeys") || {};
+      const oData = oCheckBox.getBindingContext().getObject();
+      const oSelModel = this.getView().getModel("selecao");
+      const mSelected = oSelModel.getProperty("/selectedKeys") || {};
 
       if (bSelecionado) {
         if (this._oSelecionados.length >= 3) {
@@ -108,7 +108,7 @@ sap.ui.define([
 
     onSelecionarTresPedidos: function () {
       const sFragId = this.getView().getId();
-      const oTable  = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
+      const oTable = sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar");
       if (!oTable) return MessageToast.show("Tabela ainda não carregada, tenta de novo 😉");
 
       const aItems = oTable.getItems();
@@ -139,50 +139,9 @@ sap.ui.define([
 
     onConfirmarAgrupamento: async function () {
       if (this._oSelecionados.length === 0) {
-        return MessageBox.warning("Selecione ao menos 1 pedido.");
+        return sap.m.MessageBox.warning("Selecione ao menos 1 pedido.");
       }
-
-      const oModel = this.getView().getModel();
-      const pedidos = this._oSelecionados.map(p => ({
-        pedidoID: p.pedidoID,
-        cep: p.cep,
-        numero: p.numero
-      }));
-
-      // 1. Chama action realizarEntrega
-      const oActionEntrega = oModel.bindContext("/realizarEntrega(...)")
-        .setParameter("pedidos", pedidos);
-
-      try {
-        await oActionEntrega.execute();
-        const resultado = await oActionEntrega.requestObject();
-
-        if (!resultado.success) {
-          MessageBox.error(resultado.message || "Erro ao criar entrega.");
-          return;
-        }
-
-        const aIds = this._oSelecionados.map(p => p.pedidoID);
-
-        // 2. Atualiza status para ENVIADO
-        const oActionStatus = oModel.bindContext("/atualizarStatusPedidos(...)")
-      .setParameter("pedidos", aIds)
-      .setParameter("novoStatus", "SELECIONADO");    
-        await oActionStatus.execute();
-        const resStatus = await oActionStatus.requestObject();
-
-        if (!resStatus.success) {
-          MessageBox.error(resStatus.message);
-          return;
-        }
-
-        MessageToast.show("Entrega criada e status atualizado.");
-        oModel.refresh();
-        this._oFragmentAgrupamento.close();
-      } catch (e) {
-        console.error(e);
-        MessageBox.error("Erro inesperado ao processar entrega.");
-      }
+      await this.onAbrirDialogVeiculo();
     },
 
     onCancelarAgrupamento: function () {
@@ -198,11 +157,11 @@ sap.ui.define([
     _getCentroSelecionado: function () {
       return this.byId("cbCentro").getSelectedKey() || null;
     },
-    
+
     _getStatusSelecionados: function () {
       return this.byId("mcbStatus").getSelectedKeys(); // array
     },
-    
+
     _bindTabelaSePreciso: function () {
       const oTbl = this.byId("tblPedidos");
       if (!oTbl.getBinding("items")) {
@@ -216,9 +175,9 @@ sap.ui.define([
     _applyFiltersAndSort: function () {
       const oBinding = this._bindTabelaSePreciso();
       if (!oBinding) return;
-    
+
       const aFilters = [];
-    
+
       // Centro (GUID)
       const sCentroId = this._getCentroSelecionado();
       if (sCentroId) {
@@ -229,19 +188,19 @@ sap.ui.define([
           valueType: "Edm.Guid"
         }));
       }
-    
+
       // Status (OR entre selecionados)
       const aStatus = this._getStatusSelecionados();
       if (aStatus.length) {
         const aOr = aStatus.map(st => new Filter("status", FilterOperator.EQ, st));
         aFilters.push(new Filter({ filters: aOr, and: false })); // OR
       }
-    
+
       oBinding.filter(aFilters);
-    
+
       // Sort por cidade
-      oBinding.sort([ new Sorter("cidade", this._sortCidadeDesc) ]);
-    
+      oBinding.sort([new Sorter("cidade", this._sortCidadeDesc)]);
+
       const oTbl = this.byId("tblPedidos");
       if (!sCentroId) {
         oTbl.setNoDataText("Selecione seu centro de distribuição");
@@ -254,22 +213,117 @@ sap.ui.define([
     onCentroChange: function () {
       this._applyFiltersAndSort();
     },
-    
+
     onStatusChange: function () {
       this._applyFiltersAndSort();
     },
-    
+
     onToggleSortCidade: function () {
       this._sortCidadeDesc = !this._sortCidadeDesc; // alterna
       this._applyFiltersAndSort();
     },
-    
+
     onLimparFiltros: function () {
       this.byId("cbCentro").setSelectedKey("");
       this.byId("mcbStatus").removeAllSelectedItems();
       this._applyFiltersAndSort();
       MessageToast.show("Filtros limpos.");
-    },    
-    
+    },
+
+    onAbrirDialogVeiculo: async function () {
+      if (!this._dlgVeiculo) {
+        this._dlgVeiculo = await Fragment.load({
+          name: "distribuicao.view.Fragments.FragmentSelecionarVeiculo",
+          id: this.getView().getId(),
+          controller: this
+        });
+        this.getView().addDependent(this._dlgVeiculo);
+      }
+
+      const sCentroId = this.byId("cbCentro").getSelectedKey();
+      if (!sCentroId) return sap.m.MessageBox.warning("Selecione o centro.");
+
+      const oModel = this.getView().getModel();
+
+      // 👇 ACTION via operation binding (POST)
+      const oOp = oModel.bindContext("/listarVeiculosDisponiveis(...)");
+      oOp.setParameter("centroId", sCentroId);
+
+      await oOp.execute();
+      const res = await oOp.requestObject();
+
+      // CAP + UI5 podem devolver array direto ou { value: [...] }
+      const aVeiculos = Array.isArray(res) ? res : (res && res.value) ? res.value : [];
+
+      this.getView().setModel(new sap.ui.model.json.JSONModel({ veiculos: aVeiculos }), "vmVeic");
+      this._dlgVeiculo.open();
+    },
+
+
+    onCancelarDialogVeiculo: function () {
+      this._dlgVeiculo.close();
+    },
+
+    onConfirmarVeiculo: async function () {
+      const sFragId = this.getView().getId();
+      const oDlg = sap.ui.core.Fragment.byId(sFragId, "dlgSelecionarVeiculo");
+      const cb = sap.ui.core.Fragment.byId(sFragId, "cbVeiculos");
+      const veiculoId = cb.getSelectedKey();
+      if (!veiculoId) return sap.m.MessageBox.warning("Escolha um caminhão.");
+
+      const aIds = this._oSelecionados.map(p => p.pedidoID);
+      const oModel = this.getView().getModel();
+
+      oDlg?.setBusy(true);
+
+      const oCtx = oModel.bindContext("/selecionarPedidosParaVeiculo(...)", null, {
+        $$groupId: "$direct"         // 👈 evita $batch
+      })
+        .setParameter("veiculoId", veiculoId)
+        .setParameter("pedidos", aIds);
+
+      try {
+        await oCtx.execute();
+        const res = await oCtx.requestObject();
+        if (!res?.success) throw new Error(res?.message || "Falha na seleção");
+        this._aposSelecionarOk(res, oDlg, oModel, sFragId, aIds.length);
+      } catch (e) {
+        // tenta “salvar” se o backend respondeu sucesso mesmo com reject do execute()
+        let resRec;
+        try { resRec = await oCtx.requestObject(); } catch (_) { }
+        if (resRec?.success) {
+          this._aposSelecionarOk(resRec, oDlg, oModel, sFragId, aIds.length);
+        } else {
+          console.error("[selecionarPedidos] erro:", e);
+          sap.m.MessageBox.error(resRec?.message || e?.message || "Erro inesperado ao selecionar pedidos.");
+        }
+      } finally {
+        oDlg?.setBusy(false);
+      }
+    },
+
+    _aposSelecionarOk: function (res, oDlg, oModel, sFragId, qtd) {
+      sap.m.MessageToast.show(
+        `Pedidos alocados! • Selecionados: ${res.selecionados ?? qtd}` +
+        (res.rejeitados ? ` • Com falha: ${res.rejeitados}` : "") +
+        (Number.isFinite(res.capacidadeRestante) ? ` • Livre: ${res.capacidadeRestante}` : ""),
+        { duration: 2500 }
+      );
+
+      this._oSelecionados = [];
+      this.getView().getModel("selecao")?.setProperty("/selectedKeys", {});
+      oDlg?.close();
+      this._oFragmentAgrupamento?.close();
+
+      oModel.refresh();
+      sap.ui.core.Fragment.byId(sFragId, "tblPedidosParaAgrupar")?.getBinding("items")?.refresh();
+    },
+
+
+
+    onIrVeiculos: function () {
+      this.getOwnerComponent().getRouter().navTo("RouteViewVeiculos");
+    },
+
   });
 });

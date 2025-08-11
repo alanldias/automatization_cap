@@ -1,0 +1,109 @@
+<mvc:View
+    controllerName="distribuicao.controller.ViewVeiculos"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    id="viewVeiculos">
+
+    <Page id="pageVeiculos" title="Veículos &amp; Despacho">
+        <content>
+            <VBox id="vboxPrincipalVeiculo" class="sapUiSmallMargin">
+
+                <HBox id="hboxMasterDetail" renderType="Bare">
+                    <VBox id="vboxMaster" width="40%">
+                        <Toolbar id="toolbarMaster">
+                            <Title id="tituloVeiculos" text="Veículos"/>
+                            <ToolbarSpacer id="spacerMaster"/>
+                            <ComboBox
+                                id="cbCentroVeic"
+                                placeholder="Centro (opcional)"
+                                selectionChange=".onCentroChange"
+                                items="{
+                                    path: '/CentroDistribuicao',
+                                    parameters: { $select: 'ID,nome,estado' }
+                                }">
+                                <core:Item id="itemCentroVeic" key="{ID}" text="{= ${nome} + ' - ' + ${estado} }"/>
+                            </ComboBox>
+                        </Toolbar>
+
+                        <List
+                            id="lstVeiculos"
+                            mode="SingleSelectMaster"
+                            growing="true"
+                            selectionChange=".onVehicleSelect"
+                            items="{
+                                path: '/Veiculo',
+                                parameters: { $select: 'ID,nome,placa,capacidade,capacidadeAtual,status,centro_ID' }
+                            }">
+                            <StandardListItem
+                                id="itemVeiculo"
+                                title="{= ${nome} + ' (' + ${placa} + ')' }"
+                                description="{status}"
+                                info="{= (${capacidadeAtual} || 0) + ' / ' + (${capacidade} || 0) }"
+                                infoState="None"/>
+                        </List>
+                    </VBox>
+
+                    <VBox id="vboxDetail" width="60%" class="sapUiSmallMarginBegin">
+                       <ObjectHeader
+                       id = "asla123sad"
+                        title="{vmSel>/nome}"
+                        number="{= (${vmSel>/capacidadeAtual} || 0) + ' / ' + (${vmSel>/capacidade} || 0) }"
+                        numberUnit="capacidade">
+                        <attributes>
+                            <ObjectAttribute id = "asa1la123sad" title="Placa" text="{vmSel>/placa}"/>
+                            <ObjectAttribute id = "asla123123sad" title="Status" text="{vmSel>/status}"/>
+                        </attributes>
+                        </ObjectHeader>
+
+                       <ProgressIndicator
+                       id = "asf13la123sad"
+                        percentValue="{= Math.round(100 * ((${vmSel>/capacidadeAtual} || 0) / (${vmSel>/capacidade} || 1))) }"
+                        displayValue="{= (${vmSel>/capacidadeAtual} || 0) + ' de ' + (${vmSel>/capacidade} || 0) }"/>
+
+                        <Toolbar id="toolbarPedidosVeiculo" class="sapUiTinyMarginTop">
+                            <Title id="tituloPedidosVeiculo" level="H3" text="Pedidos SELECIONADOS deste veículo"/>
+                            <ToolbarSpacer id="spacerDetail"/>
+                            <Button
+                                id="btnDespachar"
+                                text="Despachar"
+                                type="Emphasized"
+                                enabled="{= !!${vmSel>/ID} }"
+                                press=".onDespachar"/>
+                        </Toolbar>
+
+                        <Table
+                        id="tblPedidosVeiculo"
+                        items="{path: 'vmSel>/pedidos'}"
+                        noDataText="Sem pedidos para este veículo.">
+                        <columns>
+                            <Column id="colPedido4"><Text id="txtColPedido4" text="Pedido"/></Column>
+                            <Column id="colCliente4"><Text id="txtColCliente4" text="Cliente"/></Column>
+                            <Column id="colCEP4"><Text id="txtColCEP4" text="CEP"/></Column>
+                            <Column id="colCidade4"><Text id="txtColCidade4" text="Cidade"/></Column>
+                            <Column id="colUF4"><Text id="txtColUF4" text="UF"/></Column>
+                            <Column id="colStatus4"><Text id="txtColStatus4" text="Status"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem id="itemPedidoVeiculo">
+                                <cells>
+                                    <ObjectIdentifier id="objIdPedido5" title="{vmSel>pedidoID}"/>
+                                    <Text id="txtClienteNome5" text="{vmSel>clienteNome}"/>
+                                    <Text id="txtCEP5" text="{vmSel>cep}"/>
+                                    <Text id="txtCidade5" text="{vmSel>cidade}"/>
+                                    <Text id="txtEstado" text="{vmSel>estado}"/>
+                                    <ObjectStatus
+                                        id="objStatusPedido"
+                                        text="{vmSel>status}"
+                                        state="{= ${vmSel>status} === 'SELECIONADO' ? 'Warning' : 'Success' }"/>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                    </VBox>
+                </HBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

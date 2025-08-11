@@ -56,6 +56,7 @@ entity CentroDistribuicao : cuid {
 entity Veiculo : cuid, managed {
     nome       : String;
     placa      : String;
+    capacidadeAtual: Integer;
     capacidade : Integer;
     emUso      : Boolean default false;
     status     : String enum {
@@ -83,6 +84,11 @@ entity PedidosProntosEntrega {
         COM_PROBLEMAS;
       };
      descricaoProblema : String(80) default 'Sem problemas';
+     lat              : Decimal(9, 6); // ← latitude
+     lon              : Decimal(9, 6); // ← longitude
+
+     veiculo          : Association to Veiculo; // ← novo: pedido “alocado” num caminhão
+
 }
 
 entity OcorrenciasEntrega {

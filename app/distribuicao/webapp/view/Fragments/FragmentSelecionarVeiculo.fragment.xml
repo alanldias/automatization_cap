@@ -1,0 +1,46 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <Dialog
+        id="dlgSelecionarVeiculo"
+        title="Selecionar caminhão">
+        
+        <VBox id="vboxDialogVeiculo" class="sapUiSmallMargin">
+            
+           <ComboBox
+            id="cbVeiculos"
+            placeholder="Escolha um caminhão"
+            items="{
+                path: 'vmVeic>/veiculos'
+            }">
+            <core:Item
+                id ="algumidaitosemideia12321asd"
+                key="{vmVeic>ID}"
+                text="{= ${vmVeic>nome} + ' (' + ${vmVeic>placa} + ') | Cap.: ' + ${vmVeic>capacidade} + ' | Livre: ' + ${vmVeic>capacidadeRestante} }"/>
+            </ComboBox>
+            
+            <Text
+                id="txtInfoCap"
+                text="Selecione um caminhão para ver capacidade."
+                class="sapUiTinyMarginTop"/>
+            
+        </VBox>
+        
+        <beginButton>
+            <Button
+                id="btnConfirmarVeiculo"
+                text="Confirmar seleção"
+                press=".onConfirmarVeiculo"/>
+        </beginButton>
+        
+        <endButton>
+            <Button
+                id="btnCancelarDialog"
+                text="Cancelar"
+                press=".onCancelarDialogVeiculo"/>
+        </endButton>
+        
+    </Dialog>
+    
+</core:FragmentDefinition>

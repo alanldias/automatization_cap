@@ -7,8 +7,10 @@
 
   <VBox class="sapUiSmallMargin" id="vboxPrincipal">
     <HBox alignItems="Center" justifyContent="SpaceBetween" id="hboxFiltros">
+     <Button id="btnirveiculos" text="Ir para Veiculos" press=".onIrVeiculos" icon="sap-icon://multi-select"/>
       <Title text="Pedidos prontos para expedição" level="H4" id="tituloPedidos"/>
          <Button id="btnJuntarPedidos" text="Juntar Pedidos" press=".onAbrirFragmentoAgrupamento" icon="sap-icon://multi-select"/>
+
          <MultiComboBox id="mcbStatus"
                width="360px"
                selectionChange=".onStatusChange"

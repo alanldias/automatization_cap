@@ -6,9 +6,9 @@ sap.ui.define([
 ], (Controller, MessageToast, MessageBox) => {
   "use strict";
 
-  let oSimulador;
-  let iEntAtual = 0;
-  let simuladorPausado = false;
+  let oSimulador = null;        // timer
+  let iEntAtual = 0;            // índice da entrega atual
+  let simuladorPausado = false; // pausa quando abre dialogs
   let entregasConfirmadas = new Set();
 
   return Controller.extend("distribuicao.controller.ViewConsultarEntrega", {
@@ -27,8 +27,13 @@ sap.ui.define([
       if (sCodigo) this.onBotaoPress();
     },
     onBotaoPress: async function () {
+      if (oSimulador) { clearInterval(oSimulador); oSimulador = null; }
+      iEntAtual = 0;
+      simuladorPausado = false;
+      entregasConfirmadas.clear();
       const oModel = this.getView().getModel();
       const sCodigo = this.byId("inputCodigo").getValue().trim();
+
       try {
         const oCtx = oModel.bindContext("/rastrearEntrega(...)")
           .setParameter("codigo", sCodigo);
@@ -40,7 +45,12 @@ sap.ui.define([
         this._geometryEncoded = oResult.geometry;
         this._aSteps = JSON.parse(oResult.etapasRota || "[]");
         this._aDestinos = JSON.parse(oResult.destinos || "[]");
+
         this._aRastreios = JSON.parse(oResult.sequenciaRastreios || "[]");
+        if (!this._aRastreios.length && this._codigoRastreio) {
+          this._aRastreios = [this._codigoRastreio];
+        }
+
         this._horarioEntrega = oResult.horarioEntrega;
 
         this._drawMap();
@@ -52,7 +62,7 @@ sap.ui.define([
         this._simularEntrega(this._aSteps);
 
       } catch (err) {
-        MessageBox.error(err.message || "Erro inesperado");
+        sap.m.MessageBox.error(err.message || "Erro inesperado");
       }
     },
 
@@ -140,6 +150,10 @@ sap.ui.define([
         if (iStep >= nSteps) {
           clearInterval(oSimulador);
           console.log("[SIM] terminou a rota, iStep>=nSteps");
+
+          // tenta encerrar a rota pelo primeiro rastreio (mesmo veículo)
+          await this._encerrarRota(this._aRastreios?.[0]);
+
           return;
         }
 
@@ -225,8 +239,12 @@ sap.ui.define([
     },
 
     onEntregadorFalhaClienteNaoEstava: async function () {
-      const oModel   = this.getView().getModel();
-      const rastreio = this._aRastreios[iEntAtual];
+      const oModel = this.getView().getModel();
+      const rastreio = this._aRastreios?.[iEntAtual];
+      if (!rastreio) {
+        MessageBox.error("Código de rastreio não encontrado para esta entrega.");
+        return;
+      }
 
       const oCtx = oModel.bindContext("/reagendarEntrega(...)")
         .setParameter("codigo", rastreio);
@@ -254,8 +272,8 @@ sap.ui.define([
       }
 
       simuladorPausado = false;
-    },    
-    
+    },
+
     // onEntregadorFalha: function () {
     //   MessageBox.error("Entrega marcada como falha. Simulação encerrada.");
     //   this._oFragmentEntregador.close();
@@ -265,19 +283,60 @@ sap.ui.define([
     onClienteOk: async function () {
       this._oFragmentCliente.close();
 
-      const oModel   = this.getView().getModel();
-      const rastreio = this._aRastreios[iEntAtual];
+      const rastreio = this._aRastreios?.[iEntAtual];
+      if (!rastreio) {
+        sap.m.MessageBox.error("Código de rastreio não encontrado para esta entrega.");
+        return;
+      }
 
+      const oModel = this.getView().getModel();
       const oCtx = oModel.bindContext("/confirmarEntregaOk(...)")
         .setParameter("codigo", rastreio);
       await oCtx.execute();
       const res = await oCtx.requestObject();
-
       if (!res.success) {
-        MessageBox.error(res.message || "Erro ao confirmar entrega.");
+        sap.m.MessageBox.error(res.message || "Erro ao confirmar entrega.");
         return;
       }
 
+      iEntAtual++;
+      const nEnts = this._aRastreios.length;
+      if (iEntAtual < nEnts) {
+        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+      } else {
+        this._showEntregaToast(res.horarioEntrega || "agora mesmo");
+      }
+      simuladorPausado = false;
+    },
+
+
+    /**  Cliente reportou problema (pedido errado, quebrado, etc.) */
+    onClienteFalha: async function (oEvent) {
+      const oBtn = oEvent.getSource();
+      const sTipo = oBtn.data("tipoOcorrencia");      // valor do CustomData
+      const rastreio = this._aRastreios[iEntAtual];
+      const oModel = this.getView().getModel();
+
+      /* 1. Registra a ocorrência ------------------------------ */
+      const oCtxOcc = oModel.bindContext("/registrarOcorrencia(...)")
+        .setParameter("codigo", rastreio)
+        .setParameter("tipo", sTipo)
+        .setParameter("observacao", "");
+      await oCtxOcc.execute();
+      const resOcc = await oCtxOcc.requestObject();
+      if (!resOcc.success) {
+        sap.m.MessageBox.error(resOcc.message || "Erro ao registrar ocorrência.");
+        return;
+      }
+
+      /* 2. Marca a entrega como FALHOU (se fizer sentido) ----- */
+      await this._atualizarStatus(rastreio, "COM_PROBLEMAS")
+
+      /* 3. Fecha o fragmento de cliente ----------------------- */
+      this._oFragmentCliente.close();
+      MessageToast.show("Ocorrência registrada – seguindo para a próxima entrega.");
+
+      /* 4. Avança para a próxima entrega ---------------------- */
       iEntAtual++;
       const nEnts = this._aRastreios.length;
 
@@ -285,56 +344,34 @@ sap.ui.define([
         await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
         console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
       } else {
-        this._showEntregaToast(res.horarioEntrega || "agora mesmo");
-        console.log("[SIM] Todas as entregas concluídas!");
+        this._showEntregaToast("rota encerrada (falha registrada)");
+        console.log("[SIM] Todas as entregas concluídas / com ocorrências!");
       }
 
-      simuladorPausado = false;
+      simuladorPausado = false;        // ▶️ retoma o caminhão
+    },
+    _encerrarRota: async function (codigoRef) {
+      if (!codigoRef) return;
+      const oModel = this.getView().getModel();
+      try {
+        const oCtx = oModel.bindContext("/encerrarRotaDoVeiculo(...)")
+          .setParameter("codigo", codigoRef);
+        await oCtx.execute();
+        const res = await oCtx.requestObject();
+        if (!res.success) {
+          console.warn("[SIM] encerrarRota:", res.message);
+        } else {
+          console.log("[SIM] Veículo liberado e pedidos limpos.");
+          sap.m.MessageToast.show("Veículo liberado.");
+        } F
+      } catch (e) {
+        console.warn("Falha ao encerrar rota:", e.message);
+      }
     },
 
-      /**  Cliente reportou problema (pedido errado, quebrado, etc.) */
-  onClienteFalha : async function (oEvent) {
-    const oBtn     = oEvent.getSource();
-    const sTipo    = oBtn.data("tipoOcorrencia");      // valor do CustomData
-    const rastreio = this._aRastreios[iEntAtual];
-    const oModel   = this.getView().getModel();
 
-    /* 1. Registra a ocorrência ------------------------------ */
-    const oCtxOcc = oModel.bindContext("/registrarOcorrencia(...)")
-      .setParameter("codigo",     rastreio)
-      .setParameter("tipo",       sTipo)
-      .setParameter("observacao", "");
-    await oCtxOcc.execute();
-    const resOcc = await oCtxOcc.requestObject();
-    if (!resOcc.success) {
-      sap.m.MessageBox.error(resOcc.message || "Erro ao registrar ocorrência.");
-      return;
-    }
 
-    /* 2. Marca a entrega como FALHOU (se fizer sentido) ----- */
-    await this._atualizarStatus(rastreio, "COM_PROBLEMAS")
 
-    /* 3. Fecha o fragmento de cliente ----------------------- */
-    this._oFragmentCliente.close();
-    MessageToast.show("Ocorrência registrada – seguindo para a próxima entrega.");
-
-    /* 4. Avança para a próxima entrega ---------------------- */
-    iEntAtual++;
-    const nEnts = this._aRastreios.length;
-
-    if (iEntAtual < nEnts) {
-      await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
-      console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
-    } else {
-      this._showEntregaToast("rota encerrada (falha registrada)");
-      console.log("[SIM] Todas as entregas concluídas / com ocorrências!");
-    }
-
-    simuladorPausado = false;        // ▶️ retoma o caminhão
-  }
-
-    
-    
 
   });
 });

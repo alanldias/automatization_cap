@@ -109,7 +109,9 @@
         {
           "name": "RouteViewConsultarEntrega",
           "pattern": "consultar-entrega",
-          "target": ["TargetViewConsultarEntrega"]
+          "target": [
+            "TargetViewConsultarEntrega"
+          ]
         },
         {
           "name": "RouteViewEnvioPedidoComCodigo",
@@ -124,22 +126,32 @@
           "target": [
             "TargetViewTeste"
           ]
+        },
+        {
+          "pattern": "veiculos",
+          "name": "RouteViewVeiculos",
+          "target": "TargetViewVeiculos"
         }
       ],
-     "targets": {
-      "TargetViewEnvioPedido": {
-        "id": "ViewEnvioPedido",
-        "name": "ViewEnvioPedido"
-      },
-      "TargetViewConsultarEntrega": {
-        "id": "ViewConsultarEntrega",
-        "name": "ViewConsultarEntrega"
-      },
-      "TargetViewTeste": {
-        "id": "ViewTeste",
-        "name": "ViewTeste"
+      "targets": {
+        "TargetViewEnvioPedido": {
+          "id": "ViewEnvioPedido",
+          "name": "ViewEnvioPedido"
+        },
+        "TargetViewConsultarEntrega": {
+          "id": "ViewConsultarEntrega",
+          "name": "ViewConsultarEntrega"
+        },
+        "TargetViewTeste": {
+          "id": "ViewTeste",
+          "name": "ViewTeste"
+        },
+        "TargetViewVeiculos": {
+          "viewType": "XML",
+          "viewName": "ViewVeiculos",
+          "viewId": "ViewVeiculos"
+        }
       }
-    }
     },
     "rootView": {
       "viewName": "distribuicao.view.App",

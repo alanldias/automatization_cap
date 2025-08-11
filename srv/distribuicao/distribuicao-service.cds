@@ -9,7 +9,7 @@ service distribuicaoServico {
 
     entity PedidosProntosEntrega as projection on my.PedidosProntosEntrega;
 
-    entity OcorrenciasEntrega as projection on my.OcorrenciasEntrega;
+    entity OcorrenciasEntrega    as projection on my.OcorrenciasEntrega;
 
 
     type PedidoInput {
@@ -18,14 +18,14 @@ service distribuicaoServico {
         numero   : String;
     }
 
-    action realizarEntrega(pedidos : many PedidoInput)                      returns {
+    action realizarEntrega(pedidos : many PedidoInput)                                      returns {
         success  : Boolean;
         message  : String;
         geometry : my.Polyline;
         steps    : LargeString;
     };
 
-    action rastrearEntrega(codigo : String)                                 returns {
+    action rastrearEntrega(codigo : String)                                                 returns {
         success            : Boolean;
         message            : String;
         geometry           : my.Polyline;
@@ -38,45 +38,81 @@ service distribuicaoServico {
     };
 
     action atualizarStatusEntrega(codigo : String, // rastreio
-                                  novoStatus : String)                      returns {
+                                  novoStatus : String)                                      returns {
         success        : Boolean;
         message        : String;
         horarioEntrega : String; // devolve quando virar Entregue
     };
 
-    action atualizarStatusPedidos(pedidos : many UUID, novoStatus : String) returns {
+    action atualizarStatusPedidos(pedidos : many UUID, novoStatus : String)                 returns {
         success     : Boolean;
         message     : String;
         atualizados : Integer;
     };
 
-    action confirmarEntregaOk(codigo : String)                              returns {
+    action confirmarEntregaOk(codigo : String)                                              returns {
         success        : Boolean;
         message        : String;
         horarioEntrega : String;
     };
 
-    action reagendarEntrega(codigo : String)                                returns {
+    action reagendarEntrega(codigo : String)                                                returns {
         success  : Boolean;
         message  : String;
         pedidoID : UUID;
     };
 
     type TipoOcorrencia : String enum {
-    PEDIDO_ERRADO;
-    PEDIDO_QUEBRADO;
-    CLIENTE_DESCONHECE;
-    ENDERECO_INVALIDO;
-    OUTROS;
+        PEDIDO_ERRADO;
+        PEDIDO_QUEBRADO;
+        CLIENTE_DESCONHECE;
+        ENDERECO_INVALIDO;
+        OUTROS;
     }
 
-    action registrarOcorrencia(
-    codigo     : String,          // rastreio
-    tipo       : TipoOcorrencia,
-    observacao : String
-    ) returns {
-    success : Boolean;
-    message : String;
+    action registrarOcorrencia(codigo : String, tipo : TipoOcorrencia, observacao : String) returns {
+        success : Boolean;
+        message : String;
+    };
+
+    action listarVeiculosDisponiveis(centroId : UUID)                                       returns many {
+        ID                 : UUID;
+        nome               : String;
+        placa              : String;
+        capacidade         : Integer;
+        capacidadeAtual    : Integer;
+        capacidadeRestante : Integer;
+        status             : String;
+    };
+
+    action selecionarPedidosParaVeiculo(veiculoId : UUID, pedidos : many UUID)              returns {
+        success            : Boolean;
+        message            : String;
+        selecionados       : Integer;
+        rejeitados         : Integer;
+        capacidadeRestante : Integer;
+        falhas             : LargeString;
+    };
+
+    action despacharVeiculo(veiculoId : UUID)                                               returns {
+        success      : Boolean;
+        message      : String;
+        geometry     : my.Polyline;
+        steps        : LargeString;
+        rastreios    : LargeString;
+        totalPedidos : Integer;
+    };
+
+    action desalocarPedidos(veiculoId : UUID, pedidos : many UUID)                          returns {
+        success            : Boolean;
+        message            : String;
+        removidos          : Integer;
+        capacidadeRestante : Integer;
+    };
+
+    action encerrarRotaDoVeiculo(codigo : String)                                           returns {
+        success : Boolean;
+        message : String;
     };
 
 }
