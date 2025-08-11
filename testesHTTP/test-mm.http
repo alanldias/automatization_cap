@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "produto_ID": "e1a7a4fa-aaaa-4a2b-bbbb-111111111111",
-  "quantidadeDesejada": 30 
+  "quantidadeDesejada": 11
 }
 
 ###

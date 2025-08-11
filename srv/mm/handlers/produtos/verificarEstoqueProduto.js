@@ -11,6 +11,8 @@ module.exports = async function (req) {
 
     const estoqueAtual = estoque?.quantidade || 0;
     const saldoPosVenda = estoqueAtual - quantidadeDesejada;
+    console.log("Estoque atual:", estoqueAtual)
+    console.log("Saldo pos venda:", saldoPosVenda)
 
     if (estoqueAtual < quantidadeDesejada) {
         // 2️⃣ Sem estoque suficiente → cria ordem
@@ -34,20 +36,21 @@ module.exports = async function (req) {
     );
 
     // 4️⃣ Se saldo futuro < 30 → verificar se já existe ordem em aberto
-    if (saldoPosVenda < 30) {
+    if (saldoPosVenda < 10) {
         const ordensPendentes = await tx.run(
             SELECT.one.from('my.modulomm.OrdemProducao').where({
                 produto_ID_ID: produto_ID,
                 status: ['pendente', 'em_producao']
             })
         );
+        console.log("ordens:", ordensPendentes)
 
         if (!ordensPendentes) {
             req.info(200, 'Produção preventiva iniciada após venda.');
             await tx.run(
                 INSERT.into('my.modulomm.OrdemProducao').entries({
                     produto_ID: { ID: produto_ID },
-                    quantidade: 50,
+                    quantidade: 10,
                     dataCriacao: new Date(),
                     status: 'pendente'
                 })
