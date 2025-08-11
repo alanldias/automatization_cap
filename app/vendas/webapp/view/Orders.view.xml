@@ -8,7 +8,6 @@
         <!-- Cabeçalho -->
         <customHeader>
             <Bar id="barOrdersHeader" design="Auto">
-
                 <!-- Logo -->
                 <contentLeft>
                     <Image
@@ -94,8 +93,7 @@
                             enabled="{
                                 path: 'status',
                                 targetType: 'any',    
-                                formatter: '.isPayEnabled'
-                            }" />
+                                formatter: '.isPayEnabled'}" />
 
                     </HBox>
                 </CustomListItem>

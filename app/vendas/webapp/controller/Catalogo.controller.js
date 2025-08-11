@@ -32,7 +32,6 @@ sap.ui.define([
                 .navTo("ProductDetail", { productID: sID });
         },
         
-
         onGoToCart: function () {
             this.getOwnerComponent().getRouter().navTo("Cart");
         }

@@ -114,7 +114,6 @@
             enabled="{ path:'status', targetType:'any', formatter:'.isPayEnabled'}"
             class="sapUiTinyMarginBegin"/>
         </HBox>
-
       </VBox>
     </content>
   </Page>

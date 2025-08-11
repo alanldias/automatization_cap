@@ -10,13 +10,11 @@ sap.ui.define([
             sap.ui.getCore().getEventBus()
                 .subscribe("CartChannel", "CartUpdated",
                     this._onCartUpdated, this);
-            // Modelo JSON para dados locais da view
             const oViewModel = new JSONModel({
                 totalCarrinho: "Total: R$ 0,00"
             });
             this.getView().setModel(oViewModel, "view");
 
-            // Atualiza quando os dados do carrinho chegam
             const oList = this.byId("cartList");
             if (oList) {
                 const oBinding = oList.getBinding("items");
@@ -29,11 +27,9 @@ sap.ui.define([
         _onCartUpdated: function () {
             const oList = this.byId("cartList");
             if (oList) {
-                // OData V4 → refresh() sem parâmetros
-                oList.getBinding("items").refresh();   // ← sem bForceUpdate
+                oList.getBinding("items").refresh(); 
             }
         },
-        
 
         onNavBack: function () {
             const oRouter = this.getOwnerComponent().getRouter();
@@ -41,7 +37,7 @@ sap.ui.define([
         },
 
         _calcularTotal: function () {
-            const oModel = this.getView().getModel(); // OData
+            const oModel = this.getView().getModel();
             const aItens = oModel.getProperty("/CarrinhoItem");
 
             let total = 0;
@@ -61,7 +57,7 @@ sap.ui.define([
                 .execute()
                 .then(() => {
                     MessageToast.show(`Item "${oItem.produto.nome}" removido do carrinho.`);
-                    oModel.refresh(); // ✅ Atualiza a lista no front
+                    oModel.refresh();
                 })
                 .catch((err) => {
                     console.error(err);
@@ -78,9 +74,9 @@ sap.ui.define([
                 .execute()
                 .then(() => {
                     MessageToast.show("Pedido finalizado com sucesso!");
-                    oModel.refresh(); // ✅ limpa carrinho no front
+                    oModel.refresh();
                     this.getOwnerComponent().getRouter()
-                        .navTo("Orders", {}, true);   // true = substitui no histórico
+                        .navTo("Orders", {}, true);
                 })
                 .catch((err) => {
                     console.error(err);

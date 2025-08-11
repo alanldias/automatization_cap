@@ -12,25 +12,22 @@ sap.ui.define([
 
     return Controller.extend("vendas.controller.Orders", {
         onInit: function () {
-            // ao entrar na rota "Orders", chama _onRouteMatched
             this.getOwnerComponent().getRouter()
-              .getRoute("Orders")
-              .attachPatternMatched(this._onRouteMatched, this);
-          },
+                .getRoute("Orders")
+                .attachPatternMatched(this._onRouteMatched, this);
+        },
 
-          _onRouteMatched: function () {
+        _onRouteMatched: function () {
             const oList = this.byId("ordersList");
             if (oList) {
-              oList.getBinding("items").refresh();
+                oList.getBinding("items").refresh();
             }
-          },
+        },
 
         onPay: function (oEvent) {
             const oItem = oEvent.getSource().getBindingContext().getObject();
             const oView = this.getView();
             const oModel = oView.getModel();
-
-            // Criar diálogo para escolher forma de pagamento
             const oSelect = new Select("selectFormaPagamento", {
                 width: "100%",
                 items: [
@@ -39,7 +36,6 @@ sap.ui.define([
                     new Item({ key: "CARTAO_DEBITO", text: "Cartão de Débito" })
                 ]
             });
-
             const oDialog = new Dialog({
                 title: "Escolher Forma de Pagamento",
                 content: new VBox({
@@ -53,8 +49,6 @@ sap.ui.define([
                     press: function () {
                         const formaPagamento = oSelect.getSelectedKey();
                         console.log("💳 Forma de pagamento selecionada:", formaPagamento);
-
-                        // Chamar ação do backend
                         oModel.bindContext(`/realizarPagamento(...)`)
                             .setParameter("pedidoID", oItem.ID)
                             .setParameter("formaPagamento", formaPagamento)
@@ -67,7 +61,6 @@ sap.ui.define([
                                 console.error(err);
                                 MessageToast.show("Erro ao realizar pagamento.");
                             });
-
                         oDialog.close();
                     }
                 }),
@@ -86,47 +79,40 @@ sap.ui.define([
             oDialog.open();
         },
 
-        /* Navegação de retorno */
         onNavBack: function () {
             this.getOwnerComponent().getRouter()
                 .navTo("RouteCatalogo", {}, true);
         },
 
-        /* Formata a cor (state) do ObjectStatus */
         formatOrderStatusState: function (sStatus) {
             switch (sStatus) {
-                case "Pago":      return "Success";
-                case "Pendente":  return "Warning";
+                case "Pago": return "Success";
+                case "Pendente": return "Warning";
                 case "Cancelado": return "Error";
-                default:          return "None";
+                default: return "None";
             }
         },
         isPayEnabled: function (sStatus) {
-            // só habilita se o pedido estiver PENDENTE
             return sStatus === "Pendente";
         },
         formatOrderDate: function (vDate) {
-            // vDate é uma string ISO (ou timestamp) — faz a conversão segura
             if (!vDate) { return ""; }
-        
-            const oDate = new Date(vDate);          // cria objeto Date
-            // Usa o locale do browser; ajuste se quiser algo fixo (pt-BR, por ex.)
-            return oDate.toLocaleDateString(undefined, { 
-                year:  "numeric",
+
+            const oDate = new Date(vDate);
+            return oDate.toLocaleDateString(undefined, {
+                year: "numeric",
                 month: "short",
-                day:   "2-digit"
+                day: "2-digit"
             });
         },
         onOpenDetail: function (oEvent) {
-            const sOrderID = oEvent.getSource()        // CustomListItem
-                                   .getBindingContext()
-                                   .getProperty("ID"); // chave vinda do OData
-        
+            const sOrderID = oEvent.getSource()
+                .getBindingContext()
+                .getProperty("ID");
+
             this.getOwnerComponent()
                 .getRouter()
                 .navTo("OrderDetail", { orderID: sOrderID });
         }
-        
-        
     });
 });

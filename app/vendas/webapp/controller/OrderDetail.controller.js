@@ -7,16 +7,7 @@ sap.ui.define([
   "sap/m/Button",
   "sap/m/Label",
   "sap/m/VBox"
-], function (
-  Controller,
-  MessageToast,
-  Dialog,
-  Select,
-  Item,
-  Button,
-  Label,
-  VBox
-) {
+], function ( Controller, MessageToast, Dialog, Select, Item, Button, Label, VBox ) {
   "use strict";
   return Controller.extend("vendas.controller.OrderDetail", {
 
@@ -28,11 +19,9 @@ sap.ui.define([
 
     _onRouteMatched(oEvent) {
       const sID = oEvent.getParameter("arguments").orderID;
-      // String literal (UUID) entre aspas, sem guid'
       this.getView().bindElement({
         path: `/Pedidos('${sID}')`,
         parameters: {
-          // nested expand: expande 'itens' e dentro deles 'produto'
           $expand: "itens($expand=produto)"
         }
       });
@@ -64,14 +53,12 @@ sap.ui.define([
       this.getOwnerComponent().getRouter().navTo("Orders", {}, true);
     },
 
-    /** abre o popup para escolher forma e chama a action */
     onPay: function () {
       const oView = this.getView();
       const oCtx = oView.getBindingContext();
       const oItem = oCtx.getObject();
       const oModel = oView.getModel();
 
-      // 1) Select com as formas
       const oSelect = new Select({
         width: "100%",
         items: [
@@ -81,7 +68,6 @@ sap.ui.define([
         ]
       });
 
-      // 2) Dialog
       const oDialog = new Dialog({
         title: "Escolher Forma de Pagamento",
         content: new VBox({
@@ -95,7 +81,6 @@ sap.ui.define([
           press: () => {
             const sForma = oSelect.getSelectedKey();
 
-            // 3) Chama a action no backend
             oModel.bindContext("/realizarPagamento(...)", undefined, {
               $$updateGroupId: "$auto"
             })
@@ -107,7 +92,6 @@ sap.ui.define([
                   sMsg || `Pagamento do pedido ${oItem.ID} via ${sForma} realizado!`
                 );
                 oDialog.close();
-                // volta pra lista e faz refresh lá (você já tem o hook em Orders.onInit)
                 this.getOwnerComponent().getRouter()
                   .navTo("Orders", {}, true);
               })
@@ -129,14 +113,11 @@ sap.ui.define([
       oDialog.open();
     },
 
-    // OrderDetail.controller.js
     onCancel() {
       const oView = this.getView();
       const oModel = oView.getModel();
       const sID = oView.getBindingContext().getProperty("ID");
       const oRouter = this.getOwnerComponent().getRouter();
-
-      // Cria o binding para a action cancelarPedido
       const oAction = oModel.bindContext("/cancelarPedido(...)", undefined, {
         $$updateGroupId: "$auto"
       });
@@ -146,11 +127,7 @@ sap.ui.define([
         .execute()
         .then((sMessage) => {
           MessageToast.show(sMessage || `Pedido ${sID} cancelado com sucesso!`);
-
-          // Desvincula totalmente o binding do detalhe
           oView.unbindElement();
-
-          // Agora navega de volta sem que o detalhe tente refresh automático
           oRouter.navTo("Orders", {}, true);
         })
         .catch((oErr) => {

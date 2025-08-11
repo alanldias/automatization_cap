@@ -53,9 +53,7 @@
                         <!-- Bloco superior -->
                         <VBox
                             id="productCardBody"
-                            class="cardBody"
-                            
-                            >
+                            class="cardBody">
                             
                             <Image
                                 id="imgProduct"
