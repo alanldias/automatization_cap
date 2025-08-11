@@ -24,3 +24,22 @@ Content-Type: application/json
 {
   "ordemProducao_ID": "7b4d453c-d8db-4197-93d0-dcfb25269ae9"
 }
+
+### Stubs - não alteram nada ainda
+POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
+Content-Type: application/json
+
+{ "ordemProducao_ID": "00000000-0000-0000-0000-000000000001", "aprovado": true }
+
+###
+POST http://localhost:4004/odata/v4/mm/aprovarRequisicaoCompra
+Content-Type: application/json
+
+{ "requisicao_ID": "00000000-0000-0000-0000-000000000001", "aprovado": false, "motivo": "Orçamento estourado" }
+
+###
+POST http://localhost:4004/odata/v4/mm/verificarCapacidadeMaoDeObra
+Content-Type: application/json
+
+{ "produto_ID": "00000000-0000-0000-0000-000000000001", "quantidade": 10 }
+

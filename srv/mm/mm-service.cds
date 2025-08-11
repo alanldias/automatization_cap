@@ -1,7 +1,6 @@
 using my.modulomm as my from '../../db/mm-schema';
 
 service MMService @(path: '/odata/v4/mm') {
-  // Entidades principais
   entity Produtos                  as projection on my.Produto;
   entity MateriasPrimas            as projection on my.MateriaPrima;
   entity EstoquesProdutos          as projection on my.EstoqueProduto;
@@ -10,32 +9,29 @@ service MMService @(path: '/odata/v4/mm') {
 
   entity OrdensProducao            as
     projection on my.OrdemProducao {
-      *, // inclui todos os campos
-      produto_ID.nome as produto_nome // adiciona o nome do produto via associação
-    }
+      *,
+      produto_ID.nome as produto_nome
+    };
 
   entity EPIs                      as projection on my.EPI;
   entity Insumos                   as projection on my.Insumo;
   entity EstoqueInsumos            as projection on my.EstoqueInsumo;
   entity HistoricoReposicaoInsumos as projection on my.HistoricoReposicaoInsumo;
 
-  // ⚠️ Exposição temporária - usada internamente, pode ser removida futuramente
+  // ⚠️ Exposição temporária
   entity ComposicaoProdutos        as projection on my.ComposicaoProduto;
 
-  // Ações
+  // ✅ Ações da v1 (Etapa 1)
+  action gerarRequisicaoCompra(materiaPrima_ID : UUID, quantidade : Integer)                returns Boolean;
+  action verificarReposicaoInsumos(insumo_ID : UUID)                                        returns Boolean;
+  action gerarReposicaoInsumos(insumo_ID : UUID, quantidade : Integer)                      returns Boolean;
 
-  action gerarRequisicaoCompra(materiaPrima_ID : UUID, quantidade : Integer)      returns Boolean;
+  action produzirProduto(produto_ID : UUID, quantidade : Integer)                           returns Boolean;
+  action confirmarProducaoProduto(ordemProducao_ID : UUID)                                  returns Boolean;
+  action verificarEstoqueProduto(produto_ID : UUID, quantidadeDesejada : Integer)           returns Boolean;
 
-  action verificarReposicaoInsumos(insumo_ID : UUID)                              returns Boolean;
-
-  action gerarReposicaoInsumos(insumo_ID : UUID, quantidade : Integer)            returns Boolean;
-
-  // Produção
-
-  action produzirProduto(produto_ID : UUID, quantidade : Integer)                 returns
-  Boolean;
-
-  action confirmarProducaoProduto(ordemProducao_ID : UUID)                        returns Boolean;
-
-  action verificarEstoqueProduto(produto_ID : UUID, quantidadeDesejada : Integer) returns Boolean;
+  // ✅ Novas ações para v2 (Etapa 2)
+  action aprovarOrdemProducao(ordemProducao_ID : UUID, aprovado : Boolean, motivo : String) returns Boolean;
+  action aprovarRequisicaoCompra(requisicao_ID : UUID, aprovado : Boolean, motivo : String) returns Boolean;
+  action verificarCapacidadeMaoDeObra(produto_ID : UUID, quantidade : Integer)              returns Boolean;
 }
