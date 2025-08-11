@@ -26,6 +26,7 @@ sap.ui.define([
       this.byId("inputCodigo").setValue(sCodigo);
       if (sCodigo) this.onBotaoPress();
     },
+
     onBotaoPress: async function () {
       if (oSimulador) { clearInterval(oSimulador); oSimulador = null; }
       iEntAtual = 0;
@@ -274,11 +275,89 @@ sap.ui.define([
       simuladorPausado = false;
     },
 
-    // onEntregadorFalha: function () {
-    //   MessageBox.error("Entrega marcada como falha. Simulação encerrada.");
-    //   this._oFragmentEntregador.close();
-    //   if (oSimulador) clearInterval(oSimulador);
-    // },
+    onEntregadorFalha: async function (oEvent) {
+      const sTipo = oEvent.getSource().data("tipoOcorrencia");
+      const rastreio = this._aRastreios?.[iEntAtual];
+      if (!rastreio) {
+        sap.m.MessageBox.error("Código de rastreio não encontrado para esta entrega.");
+        return;
+      }
+
+      try {
+        // 1) opcional: coletar observação
+        const sObs = await this._promptObservacao(sTipo);
+
+        // 2) registrar ocorrência
+        const oModel = this.getView().getModel();
+        const oCtx = oModel.bindContext("/registrarOcorrencia(...)")
+          .setParameter("codigo", rastreio)
+          .setParameter("tipo", sTipo)
+          .setParameter("observacao", sObs || "");
+        await oCtx.execute();
+        const res = await oCtx.requestObject();
+        if (!res?.success) throw new Error(res?.message || "Falha ao registrar ocorrência");
+
+        // 3) status local (o back já marcou COM_PROBLEMAS, aqui só garantimos feedback)
+        await this._atualizarStatus(rastreio, "COM_PROBLEMAS");
+
+        // 4) fecha dialog e avança a simulação
+        this._oFragmentEntregador?.close();
+        sap.m.MessageToast.show("Ocorrência registrada.");
+
+        iEntAtual++;
+        const nEnts = this._aRastreios.length;
+        if (iEntAtual < nEnts) {
+          await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+        } else {
+          this._showEntregaToast("rota encerrada (ocorrência)");
+        }
+        simuladorPausado = false;
+
+      } catch (e) {
+        console.error("[onEntregadorFalha]", e);
+        sap.m.MessageBox.error(e.message || "Erro inesperado ao registrar ocorrência.");
+      }
+    },
+
+    _labelTipo: function (sTipo) {
+      const map = {
+        CLIENTE_DESCONHECE: "Cliente não reconhece o pedido",
+        ENDERECO_INVALIDO: "Endereço não encontrado",
+        PEDIDO_ERRADO: "Pedido errado",
+        CLIENTE_NAO_ESTA: "Cliente ausente"
+      };
+      return map[sTipo] || sTipo;
+    },
+
+    _promptObservacao: function (sTipo) {
+      return new Promise(resolve => {
+        const oDialog = new sap.m.Dialog({
+          title: "Observação (opcional)",
+          contentWidth: "480px",
+          content: [
+            new sap.m.Text({ text: this._labelTipo(sTipo), wrapping: true, class: "sapUiSmallMarginBottom" }),
+            new sap.m.TextArea({ width: "100%", rows: 4, placeholder: "Descreva o que ocorreu..." })
+          ],
+          beginButton: new sap.m.Button({
+            text: "OK",
+            press: function () {
+              const sObs = oDialog.getContent()[1].getValue?.() || "";
+              oDialog.close(); oDialog.destroy();
+              resolve(sObs);
+            }
+          }),
+          endButton: new sap.m.Button({
+            text: "Pular",
+            press: function () { oDialog.close(); oDialog.destroy(); resolve(""); }
+          }),
+          afterClose: function () { /* noop */ }
+        });
+        this.getView().addDependent(oDialog);
+        oDialog.open();
+      });
+    },
+
+
 
     onClienteOk: async function () {
       this._oFragmentCliente.close();
@@ -363,15 +442,10 @@ sap.ui.define([
         } else {
           console.log("[SIM] Veículo liberado e pedidos limpos.");
           sap.m.MessageToast.show("Veículo liberado.");
-        } F
+        }
       } catch (e) {
         console.warn("Falha ao encerrar rota:", e.message);
       }
     },
-
-
-
-
-
   });
 });

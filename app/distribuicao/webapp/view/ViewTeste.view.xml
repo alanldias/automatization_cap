@@ -10,6 +10,12 @@
      <Button id="btnirveiculos" text="Ir para Veiculos" press=".onIrVeiculos" icon="sap-icon://multi-select"/>
       <Title text="Pedidos prontos para expedição" level="H4" id="tituloPedidos"/>
          <Button id="btnJuntarPedidos" text="Juntar Pedidos" press=".onAbrirFragmentoAgrupamento" icon="sap-icon://multi-select"/>
+         
+                             <Button
+                                id="btnRefreshTelaPedidos"
+                                icon="sap-icon://refresh"
+                                tooltip="Atualizar lista"
+                                press=".onAtualizarPedidos" />
 
          <MultiComboBox id="mcbStatus"
                width="360px"

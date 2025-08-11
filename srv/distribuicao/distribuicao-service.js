@@ -5,6 +5,18 @@ const selecionarVeiculoEcd = require('./utils/selecionarVeiculo');
 const calcularRotaMultipla = require('./utils/calcularRotaMultipla');
 const cds = require('@sap/cds');
 
+const CEP_REGEX = /^\d{5}-?\d{3}$/;
+function normalizaCep(cep) {
+  if (!cep) return null;
+  const dig = String(cep).replace(/\D/g, '');
+  if (dig.length !== 8) return null;
+  return `${dig.slice(0, 5)}-${dig.slice(5)}`;
+}
+function cepValido(cep) {
+  const norm = normalizaCep(cep);
+  return norm && CEP_REGEX.test(norm) ? norm : null;
+}
+
 module.exports = async function (srv) {
   const { Entrega, Veiculo, PedidosProntosEntrega, OcorrenciasEntrega, CentroDistribuicao } = srv.entities;
 
@@ -30,19 +42,22 @@ module.exports = async function (srv) {
   /** helper: geocode + preencher lat/lon de um pedido */
   async function preencherCoordsPedido(tx, pedido) {
     try {
-      const end = await buscarEndereco(pedido.cep);
-      const coords = await buscarCoords(`${end.rua} ${pedido.numero || 'S/N'}, ${end.cidade}, ${end.estado}, ${pedido.cep}`);
+      const cepOk = cepValido(pedido.cep);
+      if (!cepOk) throw new Error('CEP_FORMATO_INVALIDO');
+
+      const end = await buscarEndereco(cepOk); // sua função já consulta ViaCEP/Nominatim
+      const coords = await buscarCoords(`${end.rua} ${pedido.numero || 'S/N'}, ${end.cidade}, ${end.estado}, ${cepOk}`);
+
       await tx.run(
-        UPDATE(PedidosProntosEntrega)
-          .set({
-            lat: coords.lat, lon: coords.lon,
-            cidade: end.cidade, estado: end.estado
-          })
-          .where({ pedidoID: pedido.pedidoID })
+        UPDATE(PedidosProntosEntrega).set({
+          lat: coords.lat, lon: coords.lon,
+          cidade: end.cidade, estado: end.estado,
+          cep: cepOk // 👈 salva normalizado, se quiser
+        }).where({ pedidoID: pedido.pedidoID })
       );
       return { ok: true };
     } catch (e) {
-      return { ok: false, motivo: e.message || 'COORDS_FAIL' };
+      return { ok: false, motivo: e?.message || 'COORDS_FAIL' };
     }
   }
 
@@ -76,7 +91,17 @@ module.exports = async function (srv) {
     const falhas = [];
 
     for (const p of rows) {
-      // geocode e grava lat/lon
+      // 🔎 valida formato antes de tentar geocodificar
+      if (!cepValido(p.cep)) {
+        falhas.push({ pedidoID: p.pedidoID, motivo: 'CEP_FORMATO_INVALIDO' });
+        await tx.run(
+          UPDATE(PedidosProntosEntrega)
+            .set({ status: 'COM_PROBLEMAS', descricaoProblema: 'CEP inválido (use 99999-999)' })
+            .where({ pedidoID: p.pedidoID })
+        );
+        continue;
+      }
+
       const r = await preencherCoordsPedido(tx, p);
       if (!r.ok) {
         falhas.push({ pedidoID: p.pedidoID, motivo: r.motivo });
@@ -88,7 +113,6 @@ module.exports = async function (srv) {
         continue;
       }
 
-      // vincula ao veículo e marca como SELECIONADO
       await tx.run(
         UPDATE(PedidosProntosEntrega)
           .set({ status: 'SELECIONADO', veiculo_ID: veiculoId })
@@ -97,7 +121,6 @@ module.exports = async function (srv) {
       selecionados++;
     }
 
-    // atualiza capacidade atual (apenas os que deram certo)
     if (selecionados > 0) {
       await tx.run(
         UPDATE(Veiculo)
@@ -114,7 +137,7 @@ module.exports = async function (srv) {
       selecionados,
       rejeitados: falhas.length,
       capacidadeRestante: (veiculo.capacidade - ((veiculo.capacidadeAtual || 0) + selecionados)),
-      falhas: JSON.stringify(falhas)
+      falhas // 👈 devolve estruturado (se preferir manter compat, tbm faça falhas: JSON.stringify(falhas))
     };
   });
 
@@ -435,79 +458,82 @@ module.exports = async function (srv) {
 
     const tx = cds.tx(req);
 
-    // 1) Busca a entrega pelo rastreio
-    const ent = await tx.run(
-      SELECT.one.from(Entrega).where({ rastreio: codigo })
-    );
+    // 1) Busca entrega
+    const ent = await tx.run(SELECT.one.from(Entrega).where({ rastreio: codigo }));
     if (!ent) return { success: false, message: 'Entrega não encontrada.' };
 
-    // 2) Marca a entrega para reagendar
+    // 2) (Novo) Registra ocorrência para auditoria, mas sem marcar COM_PROBLEMAS
     await tx.run(
-      UPDATE(Entrega).set({ statusEntrega: 'REAGENDAR' }).where({ ID: ent.ID })
+      INSERT.into(OcorrenciasEntrega).entries({
+        ID: cds.utils.uuid(),
+        pedido_pedidoID: ent.pedidoID,
+        tipo: 'CLIENTE_NAO_ESTA',
+        observacao: 'Cliente ausente - reagendar',
+        dataOcorrencia: new Date().toISOString(),
+        criadoPor: req.user?.id || 'frontend'
+      })
     );
 
-    // 3) Devolve APENAS o pedido dessa entrega para a fila
+    // 3) Marca entrega para reagendar (mantém sem “quebrar”)
+    await tx.run(
+      UPDATE(Entrega).set({
+        statusEntrega: 'REAGENDAR',
+        descricaoProblema: 'Cliente ausente - reagendar'
+      }).where({ ID: ent.ID })
+    );
+
+    // 4) Devolve o pedido para a fila (PRONTO) e limpa vínculo do veículo
     const linhas = await tx.run(
-      UPDATE('PedidosProntosEntrega')
-        .set({ status: 'PRONTO', veiculo_ID: null })
+      UPDATE(PedidosProntosEntrega)
+        .set({
+          status: 'PRONTO',
+          veiculo_ID: null,
+          descricaoProblema: 'Cliente ausente nova tentativa' // opcional: limpa “vermelho” no grid
+        })
         .where({ pedidoID: ent.pedidoID })
-      // .and({ status: { in: ['ENVIADO', 'SELECIONADO', 'COM_PROBLEMAS'] }}) // se quiser restringir
     );
-
-    // 4) (Opcional) Ajusta capacidade do veículo
-    // if (ent.veiculo_ID && linhas > 0) {
-    //   const veic = await tx.run(SELECT.one.from(Veiculo).where({ ID: ent.veiculo_ID }));
-    //   if (veic) {
-    //     await tx.run(
-    //       UPDATE(Veiculo).set({ capacidadeAtual: Math.max(0, (veic.capacidadeAtual || 0) - 1) })
-    //                      .where({ ID: veic.ID })
-    //     );
-    //   }
-    // }
 
     console.log(`[REAGENDAR] pedido ${ent.pedidoID} → PRONTO (linhas: ${linhas})`);
     return { success: true, message: 'Entrega reagendada. Pedido voltou para a fila.', pedidoID: ent.pedidoID };
   });
 
+  const LABEL_TIPO = {
+    CLIENTE_DESCONHECE: 'Cliente não reconhece o pedido',
+    ENDERECO_INVALIDO: 'Endereço não encontrado',
+    PEDIDO_ERRADO: 'Pedido errado',
+    CLIENTE_NAO_ESTA: 'Cliente ausente'
+  };
 
   srv.on('registrarOcorrencia', async req => {
-    const { codigo, tipo, observacao } = req.data
-    const tx = cds.tx(req)                           // transação reusável
+    const { codigo, tipo, observacao } = req.data;
+    const tx = cds.tx(req);
 
-    /* 1. Busca a entrega pelo código de rastreio ------------------------ */
-    const entrega = await tx.run(
-      SELECT.one.from(Entrega).where({ rastreio: codigo })
-    )
-    if (!entrega) return { success: false, message: 'Entrega não encontrada' }
+    const entrega = await tx.run(SELECT.one.from(Entrega).where({ rastreio: codigo }));
+    if (!entrega) return { success: false, message: 'Entrega não encontrada' };
 
-    /* 2. Registra a ocorrência ----------------------------------------- */
+    // usa a observação se veio; senão cai pro label do tipo; senão pro próprio tipo
+    const desc = (observacao && observacao.trim()) || LABEL_TIPO[tipo] || String(tipo);
+
     await INSERT.into(OcorrenciasEntrega).entries({
       ID: cds.utils.uuid(),
       pedido_pedidoID: entrega.pedidoID,
       tipo,
-      observacao,
+      observacao: desc,              // 👈 salva o texto final aqui
       dataOcorrencia: new Date().toISOString(),
       criadoPor: req.user?.id || 'frontend'
-    })
+    });
 
-    /* 3. Atualiza a própria entrega ------------------------------------ */
+    // marca a entrega
     await UPDATE(Entrega)
-      .set({
-        statusEntrega: 'COM_PROBLEMAS',
-        descricaoProblema: tipo          // ou use "observacao"
-      })
-      .where({ ID: entrega.ID })
+      .set({ statusEntrega: 'COM_PROBLEMAS', descricaoProblema: desc })
+      .where({ ID: entrega.ID });
 
-    /* 4. Espelha no “armazém” ------------------------------------------ */
+    // espelha no “armazém”
     await UPDATE(PedidosProntosEntrega)
-      .set({
-        status: 'COM_PROBLEMAS',
-        descricaoProblema: tipo          // mesmo motivo
-      })
-      .where({ pedidoID: entrega.pedidoID })
+      .set({ status: 'COM_PROBLEMAS', descricaoProblema: desc })
+      .where({ pedidoID: entrega.pedidoID });
 
-    /* 5. Done ----------------------------------------------------------- */
-    return { success: true, message: 'Ocorrência registrada!' }
+    return { success: true, message: 'Ocorrência registrada!' };
   });
 
 };

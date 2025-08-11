@@ -16,13 +16,6 @@ service distribuicaoServico {
         pedidoID : UUID;
         cep      : String;
         numero   : String;
-    }
-
-    action realizarEntrega(pedidos : many PedidoInput)                                      returns {
-        success  : Boolean;
-        message  : String;
-        geometry : my.Polyline;
-        steps    : LargeString;
     };
 
     action rastrearEntrega(codigo : String)                                                 returns {

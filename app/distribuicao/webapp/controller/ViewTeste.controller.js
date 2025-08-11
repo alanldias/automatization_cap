@@ -325,5 +325,20 @@ sap.ui.define([
       this.getOwnerComponent().getRouter().navTo("RouteViewVeiculos");
     },
 
+    onAtualizarPedidos: function () {
+            const oModel = this.getView().getModel(); // ODataModel V4
+            if (oModel && oModel.refresh) {
+                oModel.refresh(); // força reload do back
+            }
+
+            // Limpa seleção atual
+            const oViewModel = this.getView().getModel("vmSel");
+            if (oViewModel) {
+                oViewModel.setData({}); // limpa detalhe
+            }
+
+            sap.m.MessageToast.show("Lista de veículos atualizada!");
+        }
+
   });
 });

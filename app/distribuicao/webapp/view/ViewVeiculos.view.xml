@@ -14,6 +14,13 @@
                         <Toolbar id="toolbarMaster">
                             <Title id="tituloVeiculos" text="Veículos"/>
                             <ToolbarSpacer id="spacerMaster"/>
+
+                             <Button
+                                id="btnRefreshVeiculos"
+                                icon="sap-icon://refresh"
+                                tooltip="Atualizar lista"
+                                press=".onAtualizarVeiculos" />
+
                             <ComboBox
                                 id="cbCentroVeic"
                                 placeholder="Centro (opcional)"

@@ -82,6 +82,10 @@ entity PedidosProntosEntrega {
         ENVIADO;
         FINALIZADO;
         COM_PROBLEMAS;
+        CLIENTE_DESCONHECE;
+        ENDERECO_INVALIDO;
+        PEDIDO_ERRADO;
+        CLIENTE_NAO_ESTA;
       };
      descricaoProblema : String(80) default 'Sem problemas';
      lat              : Decimal(9, 6); // ← latitude
