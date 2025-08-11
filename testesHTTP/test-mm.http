@@ -43,3 +43,30 @@ Content-Type: application/json
 
 { "produto_ID": "00000000-0000-0000-0000-000000000001", "quantidade": 10 }
 
+###
+POST http://localhost:4004/odata/v4/mm/verificarCapacidadeMaoDeObra
+Content-Type: application/json
+
+{ "produto_ID": "11111111-1111-1111-1111-111111111111", "quantidade": 10 }
+
+###
+POST http://localhost:4004/odata/v4/mm/OrdensProducao
+Content-Type: application/json
+
+{
+  "produto_ID_ID": "11111111-1111-1111-1111-111111111111",
+  "quantidade": 1,
+  "status": "aguardando_aprovacao"
+}
+
+###
+POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
+Content-Type: application/json
+
+{
+  "ordemProducao_ID": "8a8be83a-47df-46dc-8482-b0e27cffceae",
+  "aprovado": true
+}
+
+###
+GET http://localhost:4004/odata/v4/mm/OrdensProducao('8a8be83a-47df-46dc-8482-b0e27cffceae')
