@@ -28,7 +28,15 @@ service MMService @(path: '/odata/v4/mm') {
 
   action produzirProduto(produto_ID : UUID, quantidade : Integer)                           returns Boolean;
   action confirmarProducaoProduto(ordemProducao_ID : UUID)                                  returns Boolean;
-  action verificarEstoqueProduto(produto_ID : UUID, quantidadeDesejada : Integer)           returns Boolean;
+
+  type VerificarEstoqueProdutoResult : {
+  ok                : Boolean;
+  mensagem          : String;
+  ordemProducao_ID  : UUID;
+  etaPreliminar     : DateTime; 
+  }
+  action verificarEstoqueProduto(produto_ID : UUID, quantidadeDesejada : Integer)
+  returns VerificarEstoqueProdutoResult;
 
   // ✅ Novas ações para v2 (Etapa 2)
   action aprovarOrdemProducao(ordemProducao_ID : UUID, aprovado : Boolean, motivo : String) returns Boolean;

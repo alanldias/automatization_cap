@@ -5,10 +5,9 @@ module.exports = async function gerarRequisicaoCompra(tx, materiaPrima_ID, quant
   // 1️⃣ Executa o insert na tabela de Requisicoes
   await tx.run(
     INSERT.into('my.modulomm.RequisicaoCompra').entries({
-      materiaPrima_ID: { ID: materiaPrima_ID }, // 👈 Necessário pois é Association
+      materiaPrima_ID: { ID: materiaPrima_ID }, 
       quantidade,
-      status: 'pendente',                       // ✅ Status inicial
-      dataCriacao: new Date()                   // 🕓 Marca a data atual
+      status: 'pendente',                    
     })
   );
 };

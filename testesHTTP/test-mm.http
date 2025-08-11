@@ -1,62 +1,18 @@
+POST http://localhost:4004/odata/v4/mm/produzirProduto
+Content-Type: application/json
+
+{
+  "produto_ID": "11111111-1111-1111-1111-111111111111",
+  "quantidade": 20
+}
+
+###
 POST http://localhost:4004/odata/v4/mm/verificarEstoqueProduto
 Content-Type: application/json
 
 {
-  "produto_ID": "e1a7a4fa-aaaa-4a2b-bbbb-111111111111",
-  "quantidadeDesejada": 11
-}
-
-###
-
-POST http://localhost:4004/odata/v4/mm/produzirProduto 
-Content-Type: application/json
-
-{
-  "produto_ID": "e1a7a4fa-aaaa-4a2b-bbbb-111111111111",
-  "quantidade": 5
-}
-
-###
-
-POST http://localhost:4004/odata/v4/mm/confirmarProducaoProduto
-Content-Type: application/json
-
-{
-  "ordemProducao_ID": "7b4d453c-d8db-4197-93d0-dcfb25269ae9"
-}
-
-### Stubs - não alteram nada ainda
-POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
-Content-Type: application/json
-
-{ "ordemProducao_ID": "00000000-0000-0000-0000-000000000001", "aprovado": true }
-
-###
-POST http://localhost:4004/odata/v4/mm/aprovarRequisicaoCompra
-Content-Type: application/json
-
-{ "requisicao_ID": "00000000-0000-0000-0000-000000000001", "aprovado": false, "motivo": "Orçamento estourado" }
-
-###
-POST http://localhost:4004/odata/v4/mm/verificarCapacidadeMaoDeObra
-Content-Type: application/json
-
-{ "produto_ID": "00000000-0000-0000-0000-000000000001", "quantidade": 10 }
-
-###
-POST http://localhost:4004/odata/v4/mm/verificarCapacidadeMaoDeObra
-Content-Type: application/json
-
-{ "produto_ID": "11111111-1111-1111-1111-111111111111", "quantidade": 10 }
-
-###
-POST http://localhost:4004/odata/v4/mm/OrdensProducao
-Content-Type: application/json
-
-{
-  "produto_ID_ID": "11111111-1111-1111-1111-111111111111",
-  "quantidade": 1,
-  "status": "aguardando_aprovacao"
+  "produto_ID": "11111111-1111-1111-1111-111111111111",
+  "quantidadeDesejada": 25
 }
 
 ###
@@ -64,9 +20,7 @@ POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
 Content-Type: application/json
 
 {
-  "ordemProducao_ID": "8a8be83a-47df-46dc-8482-b0e27cffceae",
+  "ordemProducao_ID": "0ce939b0-60ca-41f5-b9c3-6fea44718584",
   "aprovado": true
 }
 
-###
-GET http://localhost:4004/odata/v4/mm/OrdensProducao('8a8be83a-47df-46dc-8482-b0e27cffceae')
