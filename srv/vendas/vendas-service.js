@@ -183,6 +183,20 @@ module.exports = cds.service.impl(function () {
                        "pt-BR", { style:"currency", currency:"BRL" }) // "R$ 13.300,00"
       
         return { value : valor }          //  ←  sempre nesse formato
-      })
+      });
+
+      this.on('cancelarPedido', async (req) => {
+        const { pedidoID } = req.data;
+        const tx = cds.transaction(req);
+    
+        // use o FQN do seu entity set no domínio: my.vendas.Pedidos
+        await tx.run(
+          UPDATE('my.vendas.Pedidos')
+            .set({ status: 'CANCELADO' })
+            .where({ ID: pedidoID })
+        );
+    
+        return `Pedido ${pedidoID} cancelado com sucesso!`;
+      });
                                                                                               
 });

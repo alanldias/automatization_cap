@@ -84,7 +84,7 @@ sap.ui.define([
                 })
                 .catch((err) => {
                     console.error(err);
-                    MessageToast.show("Erro ao finalizar pedido.");
+                    MessageToast.show(err);
                 });
         }
     });

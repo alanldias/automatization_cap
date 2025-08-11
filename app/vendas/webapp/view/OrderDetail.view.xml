@@ -1,0 +1,121 @@
+<mvc:View
+  controllerName="vendas.controller.OrderDetail"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m">
+
+  <Page id="orderDetailPage" showHeader="true" title="">
+
+    <!-- HEADER -->
+    <customHeader>
+      <Bar id="barOrderHeader" design="Auto">
+        <contentLeft>
+          <Image
+            id="imgLogoOrder"
+            src="img/logo.png"
+            height="40px"
+            densityAware="false"
+            decorative="false"/>
+        </contentLeft>
+        <contentMiddle>
+          <Title
+            id="titleOrderHeader"
+            text="Detalhe do Pedido"
+            level="H2"/>
+        </contentMiddle>
+        <contentRight>
+            <Button
+            id="btnBackFromOrder"
+            icon="sap-icon://nav-back"
+            type="Transparent"
+            press=".onNavBack"/>
+          <ToolbarSpacer id="spOrderDetailRight"/>
+        </contentRight>
+      </Bar>
+    </customHeader>
+
+    <!-- CONTENT -->
+    <content>
+      <VBox id="vboxOrderRoot" class="sapUiMediumMargin">
+
+        <!-- ID + Status -->
+        <HBox id="hboxOrderIDStatus" alignItems="Center">
+          <Text
+            id="txtDetailOrderID"
+            text="Pedido #{ path:'ID', targetType:'any'}"
+            class="orderIdText"/>
+          <ObjectStatus
+            id="statusOrderDetail"
+            text="{ path:'status', targetType:'any'}"
+            state="{
+              path:'status',
+              targetType:'any',
+              formatter:'.formatOrderStatusState'
+            }"
+            class="sapUiTinyMarginBegin"/>
+        </HBox>
+
+        <!-- Data + Total -->
+        <HBox id="hboxOrderMeta" alignItems="Center" class="sapUiSmallMarginTop">
+          <Text
+            id="txtDetailOrderDate"
+            text="{ path:'dataPedido', targetType:'any', formatter:'.formatOrderDate'}"/>
+          <ObjectNumber
+            id="numDetailOrderTotal"
+            number="{ path:'total', targetType:'any'}"
+            unit="R$"
+            class="orderTotal sapUiTinyMarginBegin"/>
+        </HBox>
+
+        <!-- Itens do Pedido -->
+        <List
+          id="listOrderItems"
+          headerText="Itens do Pedido"
+          items="{ path:'itens'}">
+          <CustomListItem id="cliOrderItem">
+            <HBox id="hboxOrderItemLine" alignItems="Center" justifyContent="SpaceBetween">
+
+              <HBox id="hboxOrderItemLeft" alignItems="Center">
+                <Image
+                  id="imgOrderItem"
+                  src="{produto/imagem}"
+                  width="60px"
+                  height="60px"
+                  densityAware="false"
+                  decorative="false"/>
+                <VBox id="vboxOrderItemInfo" class="sapUiTinyMarginBegin">
+                  <Text id="txtOrderItemName" text="{produto/nome}"/>
+                  <Text id="txtOrderItemQty" text="Qtd: { path:'quantidade', targetType:'any'}"/>
+                </VBox>
+              </HBox>
+
+              <ObjectNumber
+                id="numOrderItemSubtotal"
+                number="{ path:'subtotal', targetType:'any'}"
+                unit="R$"/>
+            </HBox>
+          </CustomListItem>
+        </List>
+
+        <!-- AÇÕES -->
+        <HBox id="hboxOrderActions" justifyContent="End" class="sapUiMediumMarginTop">
+          <Button
+            id="btnOrderCancel"
+            text="Cancelar Pedido"
+            type="Reject"
+            icon="sap-icon://undo"
+            press=".onCancel"
+            enabled="{ path:'status', targetType:'any', formatter:'.isCancelEnabled'}"/>
+          <Button
+            id="btnOrderPayDetail"
+            text="Pagar"
+            type="Accept"
+            icon="sap-icon://credit-card"
+            press=".onPay"
+            enabled="{ path:'status', targetType:'any', formatter:'.isPayEnabled'}"
+            class="sapUiTinyMarginBegin"/>
+        </HBox>
+
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

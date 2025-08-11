@@ -6,7 +6,11 @@ type TipoEndereco : String enum {
     COBRANCA;
     ENTREGA;
 }
-
+type TipoPedido    : String enum { 
+    PENDENTE; 
+    PAGO; 
+    CANCELADO;
+    ENTREGUE; }
 @odata.draft.enabled
 entity Clientes : cuid, managed {
     key ID          : UUID;
@@ -58,7 +62,7 @@ entity Pedidos {
     key ID          : UUID @default :uuid;
     usuario         : String(50);
     dataPedido      : Timestamp @default :now;
-    status          : String(30);
+    status            : TipoPedido; 
     formaPagamento  : TipoPagamento; 
     total           : Decimal(10,2);
     itens           : Composition of many PedidoItem on itens.pedido = $self;

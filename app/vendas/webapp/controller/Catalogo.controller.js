@@ -25,6 +25,13 @@ sap.ui.define([
                 });
         },
         
+        onOpenDetail: function (oEvent) {
+            const oCtx = oEvent.getSource().getBindingContext();
+            const sID  = oCtx.getProperty("ID");
+            this.getOwnerComponent().getRouter()
+                .navTo("ProductDetail", { productID: sID });
+        },
+        
 
         onGoToCart: function () {
             this.getOwnerComponent().getRouter().navTo("Cart");

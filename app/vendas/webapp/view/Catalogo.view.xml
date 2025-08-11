@@ -54,11 +54,13 @@
                         <VBox
                             id="productCardBody"
                             class="cardBody"
+                            
                             >
                             
                             <Image
                                 id="imgProduct"
                                 src="{imagem}"
+                                press=".onOpenDetail"
                                 width="100%"
                                 height="140px"
                                 densityAware="false"

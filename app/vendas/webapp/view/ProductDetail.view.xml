@@ -1,0 +1,90 @@
+<mvc:View
+    controllerName="vendas.controller.ProductDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <!-- Página de Detalhe -->
+    <Page
+        id="productDetailPage"
+        title=""
+        showHeader="true">
+
+        <!-- Cabeçalho personalizado -->
+        <customHeader>
+            <Bar id="barProductHeader" design="Auto">
+
+                <!-- Botão Voltar + Logo -->
+                <contentLeft>
+                    <Image
+                        id="imgLogoDetail"
+                        src="img/logo.png"
+                        height="40px"
+                        densityAware="false"
+                        decorative="false" />
+                </contentLeft>
+
+                <!-- Título -->
+                <contentMiddle>
+                    <Title
+                        id="titleProductHeader"
+                        text="Detalhe do Produto"
+                        level="H2" />
+                </contentMiddle>
+
+                <contentRight>
+                    <Button
+                        id="btnBackFromDetail"
+                        icon="sap-icon://nav-back"
+                        type="Transparent"
+                        press=".onNavBack" />
+                    <ToolbarSpacer id="spDetailHeaderRight" />
+                </contentRight>
+            </Bar>
+        </customHeader>
+
+        <!-- Conteúdo principal -->
+        <content>
+            <VBox id="detailVBox" class="sapUiMediumMargin">
+
+                <!-- Imagem grande -->
+                <Image
+                    id="imgDetailProduct"
+                    src="{imagem}"
+                    height="240px"
+                    densityAware="false"
+                    decorative="false"
+                    class="detailImage"/>
+
+                <!-- Nome -->
+                <Title
+                    id="titleDetailName"
+                    text="{nome}"
+                    level="H3"
+                    class="sapUiSmallMarginTop"/>
+
+                <!-- Descrição -->
+                <Text
+                    id="txtDetailDesc"
+                    text="{descricao}"
+                    wrapping="true"
+                    class="sapUiTinyMarginTop"/>
+
+                <!-- Preço -->
+                <ObjectNumber
+                    id="numDetailPrice"
+                    number="{preco}"
+                    unit="R$"
+                    class="detailPrice sapUiMediumMarginTop"/>
+
+                <!-- Botão Adicionar ao carrinho -->
+                <Button
+                    id="btnDetailAddCart"
+                    text="Adicionar ao Carrinho"
+                    icon="sap-icon://cart"
+                    type="Emphasized"
+                    press=".onAddToCart"
+                    class="sapUiMediumMarginTop"/>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -3,17 +3,13 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
 
-    <!-- Página de Pedidos -->
-    <Page
-        id="ordersPage"
-        showHeader="true"
-        title="">         <!-- título será exibido no customHeader -->
+    <Page id="ordersPage" showHeader="true" title="">
 
-        <!-- Cabeçalho personalizado -->
+        <!-- Cabeçalho -->
         <customHeader>
             <Bar id="barOrdersHeader" design="Auto">
 
-                <!-- Botão Voltar + Logo -->
+                <!-- Logo -->
                 <contentLeft>
                     <Image
                         id="imgLogoOrders"
@@ -31,7 +27,7 @@
                         level="H2" />
                 </contentMiddle>
 
-                <!-- Espaço para futuros ícones -->
+                <!-- Botão voltar -->
                 <contentRight>
                     <Button
                         id="btnBackToCatalogFromOrders"
@@ -49,64 +45,70 @@
                 id="ordersList"
                 inset="false"
                 items="{ path: '/Pedidos' }">
-                
-                <CustomListItem id="orderListItem" class="orderItem">
-                    <HBox
-                        id="orderHBox"
-                        alignItems="Center"
-                        justifyContent="SpaceBetween">
 
-                        <!-- Bloco de informações -->
+                <!-- Cada pedido -->
+                <CustomListItem
+                    id="orderListItem"
+                    type="Active"                
+                    press=".onOpenDetail"       
+                    class="orderItem">
+
+                    <HBox id="orderHBox" alignItems="Center" justifyContent="SpaceBetween">
+
+                        <!-- Informações -->
                         <VBox id="orderVBox" class="orderInfoBox">
-                            <Text
-                                id="txtOrderID"
-                                text="Pedido #{ID}"
-                                class="orderIdText" />
+                            <Text id="txtOrderID"
+                                  text="Pedido #{ID}"
+                                  class="orderIdText" />
 
-                            <!-- Status com cor contextual -->
-                            <ObjectStatus
-                                id="statusOrder"
+                            <ObjectStatus id="statusOrder"
                                 text="{status}"
                                 state="{
                                     path: 'status',
                                     formatter: '.formatOrderStatusState'
                                 }" />
 
-                            <!-- Total -->
-                            <ObjectNumber
-                                id="numOrderTotal"
+                            <ObjectNumber id="numOrderTotal"
                                 number="{total}"
                                 unit="R$"
                                 class="orderTotal" />
 
-                            <!-- Data -->
                             <Text
                                 id="txtOrderDate"
-                                text="{ path: 'dataPedido', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }"
+                                text="{
+                                    path: 'dataPedido',
+                                    targetType: 'any',     
+                                    formatter: '.formatOrderDate'
+                                }"
                                 class="orderDate" />
                         </VBox>
 
                         <!-- Botão Pagar -->
+                       <!-- Botão Pagar (corrigido) -->
                         <Button
                             id="btnOrderPay"
                             text="Pagar"
                             icon="sap-icon://credit-card"
                             type="Accept"
                             press=".onPay"
-                            enabled="{= ${status} !== 'Pago' }" />
+                            enabled="{
+                                path: 'status',
+                                targetType: 'any',    
+                                formatter: '.isPayEnabled'
+                            }" />
+
                     </HBox>
                 </CustomListItem>
             </List>
         </content>
 
-        <!-- Rodapé (apenas botão voltar)  -->
+        <!-- Rodapé -->
         <footer>
             <Toolbar id="ordersToolbar">
                 <ToolbarSpacer id="ordersToolbarSpacer" />
-                <Button
-                    id="btnOrdersBack"
-                    text="Voltar"
-                    press=".onNavBack" />
+                <Button id="btnOrdersBack"
+                        text="Voltar"
+                        press=".onNavBack" />
             </Toolbar>
         </footer>
     </Page>

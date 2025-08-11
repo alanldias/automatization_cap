@@ -108,6 +108,16 @@
           "pattern": "orders",
           "name": "Orders",
           "target": "Orders"
+        },
+        {
+          "pattern": "product/{productID}",        
+          "name": "ProductDetail",                 
+          "target": "ProductDetail"
+        },
+        {
+          "pattern": "order/{orderID}",
+          "name":    "OrderDetail",
+          "target":  "OrderDetail"
         }
         
       ],
@@ -123,6 +133,16 @@
         "Orders": {
           "id": "Orders",
           "name": "Orders"
+        },
+        "ProductDetail": {
+          "id": "ProductDetail",                    
+          "name": "ProductDetail",                   
+          "level": 2                           
+        },
+        "OrderDetail": {
+          "id":   "OrderDetail",
+          "name": "OrderDetail",           
+          "level": 3                          
         }
 
       }

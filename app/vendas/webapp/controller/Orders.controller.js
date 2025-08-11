@@ -11,7 +11,19 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("vendas.controller.Orders", {
-        onInit: function () {},
+        onInit: function () {
+            // ao entrar na rota "Orders", chama _onRouteMatched
+            this.getOwnerComponent().getRouter()
+              .getRoute("Orders")
+              .attachPatternMatched(this._onRouteMatched, this);
+          },
+
+          _onRouteMatched: function () {
+            const oList = this.byId("ordersList");
+            if (oList) {
+              oList.getBinding("items").refresh();
+            }
+          },
 
         onPay: function (oEvent) {
             const oItem = oEvent.getSource().getBindingContext().getObject();
@@ -89,5 +101,32 @@ sap.ui.define([
                 default:          return "None";
             }
         },
+        isPayEnabled: function (sStatus) {
+            // só habilita se o pedido estiver PENDENTE
+            return sStatus === "Pendente";
+        },
+        formatOrderDate: function (vDate) {
+            // vDate é uma string ISO (ou timestamp) — faz a conversão segura
+            if (!vDate) { return ""; }
+        
+            const oDate = new Date(vDate);          // cria objeto Date
+            // Usa o locale do browser; ajuste se quiser algo fixo (pt-BR, por ex.)
+            return oDate.toLocaleDateString(undefined, { 
+                year:  "numeric",
+                month: "short",
+                day:   "2-digit"
+            });
+        },
+        onOpenDetail: function (oEvent) {
+            const sOrderID = oEvent.getSource()        // CustomListItem
+                                   .getBindingContext()
+                                   .getProperty("ID"); // chave vinda do OData
+        
+            this.getOwnerComponent()
+                .getRouter()
+                .navTo("OrderDetail", { orderID: sOrderID });
+        }
+        
+        
     });
 });

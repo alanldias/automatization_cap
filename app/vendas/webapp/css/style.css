@@ -50,3 +50,17 @@
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid #e5e5e5;  /* linha sutil de separação */
 }
+.detailImage {
+    object-fit: contain;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fafafa;
+}
+.detailPrice {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+.orderIdText      { font-weight: 600; }
+.orderTotal       { font-size: 1.1rem; }
+.orderItemImage   { border-radius: 6px; }
+.orderItemSubtotal{ font-weight: 600; }
