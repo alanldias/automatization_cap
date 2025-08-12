@@ -103,9 +103,9 @@
         <footer>
             <Toolbar id="cartToolbar">
                 <Text
-                    id="txtCartTotal"
-                    text="Total: R$ 0,00"
-                    class="cartPrice" />
+                id="txtCartTotal"
+                text="{view>/totalCarrinho}"
+                class="cartPrice" />
                 <ToolbarSpacer id="cartToolbarSpacer" />
                 <Button
                     id="btnCheckout"
