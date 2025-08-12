@@ -1,11 +1,18 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageToast",
-  "sap/m/MessageBox"
-], function (Controller, MessageToast, MessageBox) {
+  "sap/m/MessageBox",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator"
+], function (Controller, MessageToast, MessageBox, Filter, FilterOperator) {
   "use strict";
 
   return Controller.extend("vendas.controller.Catalogo", {
+    onInit: function () {
+      const oSearch = this.byId("searchCatalog");
+      if (oSearch) oSearch.setValue("");
+      if (this._applySearch) this._applySearch("");
+    },
 
     _isConflict: function (err) {
       const m = (err && (err.message || err.toString())) || "";
@@ -107,6 +114,43 @@ sap.ui.define([
 
     onGoToCart: function () {
       this.getOwnerComponent().getRouter().navTo("Cart");
-    }
+    },
+    /** ========== Pesquisa ========== */
+    onSearchChange: function (oEvent) {
+      // liveChange (com debounce leve)
+      const sQuery = oEvent.getParameter("newValue") || "";
+      clearTimeout(this._searchTimer);
+      this._searchTimer = setTimeout(() => this._applySearch(sQuery), 200);
+    },
+
+    onSearchSubmit: function (oEvent) {
+      // Enter ou botão de busca
+      const sQuery = oEvent.getParameter("query") || oEvent.getSource().getValue() || "";
+      this._applySearch(sQuery);
+    },
+
+    _applySearch: function (sQuery) {
+      const oFlex = this.byId("productFlexBox"); // <- sua lista de produtos
+      if (!oFlex) return;
+
+      const oBinding = oFlex.getBinding("items");
+      if (!oBinding) return;
+
+      const s = (sQuery || "").trim();
+      if (!s) {
+        // limpa filtros
+        oBinding.filter([]);
+        return;
+      }
+
+      // Filtra por nome OU descrição (contains)
+      const aOrFilters = [
+        new Filter("nome",       FilterOperator.Contains, s),
+        new Filter("descricao",  FilterOperator.Contains, s)
+      ];
+      const oCombined = new Filter({ filters: aOrFilters, and: false }); // (f1 OR f2)
+
+      oBinding.filter([oCombined]);
+    },
   });
 });

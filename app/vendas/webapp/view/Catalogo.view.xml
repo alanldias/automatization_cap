@@ -29,6 +29,13 @@
             
             <!-- Espaçador para futuro botão, perfil etc. -->
             <contentRight>
+                <SearchField
+                id="searchCatalog"
+                width="22rem"
+                placeholder="Pesquisar produtos"
+                showSearchButton="true"
+                liveChange=".onSearchChange"
+                search=".onSearchSubmit" />
                 <ToolbarSpacer id="spHeaderRight"/>
             </contentRight>
         </Bar>
