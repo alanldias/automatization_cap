@@ -30,13 +30,6 @@ service distribuicaoServico {
         distanciaKm        : Integer;
     };
 
-    action atualizarStatusEntrega(codigo : String, // rastreio
-                                  novoStatus : String)                                      returns {
-        success        : Boolean;
-        message        : String;
-        horarioEntrega : String; // devolve quando virar Entregue
-    };
-
     action atualizarStatusPedidos(pedidos : many UUID, novoStatus : String)                 returns {
         success     : Boolean;
         message     : String;

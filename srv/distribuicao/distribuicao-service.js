@@ -387,7 +387,6 @@ module.exports = async function (srv) {
     }
   });
 
-
   srv.on('encerrarRotaDoVeiculo', async req => {
     try {
       const { codigo } = req.data;
@@ -423,8 +422,6 @@ module.exports = async function (srv) {
       req.error(500, 'Erro ao encerrar rota do veículo.');
     }
   });
-
-
   // ---------- ACTION rastrear -----------
   srv.on('rastrearEntrega', async req => {
     try {
@@ -492,7 +489,6 @@ module.exports = async function (srv) {
       req.error(500, 'Erro ao atualizar status dos pedidos.');
     }
   });
-
 
   srv.on('confirmarEntregaOk', async req => {
     try {
@@ -618,6 +614,5 @@ module.exports = async function (srv) {
       req.error(500, 'Erro ao registrar ocorrência.');
     }
   });
-
 
 };
