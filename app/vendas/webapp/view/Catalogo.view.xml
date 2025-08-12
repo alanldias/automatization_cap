@@ -46,7 +46,7 @@
                     <VBox
                         id="productCard"
                         class="sapUiSmallMargin cardStyle"
-                        width="200px"
+                        width="220px"
                         height="330px"
                         justifyContent="SpaceBetween">
 
@@ -54,7 +54,7 @@
                         <VBox
                             id="productCardBody"
                             class="cardBody">
-                            
+
                             <Image
                                 id="imgProduct"
                                 src="{imagem}"
@@ -88,11 +88,23 @@
                                 unit="R$"
                                 number="{preco}" />
 
+                             <!-- Ações: quantidade + botão -->
+                            <HBox id="productCardActions" alignItems="Center" justifyContent="SpaceBetween">
+                            <StepInput
+                                id="stepQty"
+                                width="6rem"
+                                min="1"
+                                max="999"
+                                step="1"
+                                value="1"
+                                textAlign="Center"/>
                             <Button
                                 id="btnAddToCart"
                                 text="Adicionar"
                                 type="Emphasized"
-                                press=".onAddToCart" />
+                                icon="sap-icon://cart"
+                                press=".onAddToCart"/>
+                            </HBox>
                         </VBox>
                     </VBox>
                 </items>

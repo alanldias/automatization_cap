@@ -87,13 +87,13 @@ sap.ui.define([
         formatOrderStatusState: function (sStatus) {
             switch (sStatus) {
                 case "Pago": return "Success";
-                case "Pendente": return "Warning";
-                case "Cancelado": return "Error";
+                case "PENDENTE": return "Warning";
+                case "CANCELADO": return "Error";
                 default: return "None";
             }
         },
         isPayEnabled: function (sStatus) {
-            return sStatus === "Pendente";
+            return sStatus === "PENDENTE";
         },
         formatOrderDate: function (vDate) {
             if (!vDate) { return ""; }

@@ -1,202 +1,236 @@
 const cds = require('@sap/cds');
 
 module.exports = cds.service.impl(function () {
-    const { Produtos, Carrinho, CarrinhoItem, Pedidos, PedidoItem } = this.entities;
+  const { Produtos, Carrinho, CarrinhoItem, Pedidos, PedidoItem } = this.entities;
 
-    this.on('addToCart', async (req) => {
-      const { usuario, produtoID, quantidade } = req.data;
-      console.log("📥 Dados recebidos no addToCart:", { usuario, produtoID, quantidade });
-  
-      const produto = await SELECT.one.from(Produtos).where({ ID: produtoID });
-      console.log("🔍 Produto encontrado:", produto);
-  
-      if (!produto) {
-          console.log("❌ Produto não encontrado para ID:", produtoID);
-          return req.error(404, 'Produto não encontrado');
-      }
-  
-      let carrinho = await SELECT.one.from(Carrinho).where({ usuario });
-      console.log("🛒 Carrinho encontrado:", carrinho);
-  
-      if (!carrinho) {
-        console.log("➕ Nenhum carrinho encontrado, criando novo para usuário:", usuario);
-        await INSERT.into(Carrinho).entries({ usuario });
-        carrinho = await SELECT.one.from(Carrinho).where({ usuario }); // ✅ garante que ID vem do banco
-        console.log("📦 Carrinho criado e recuperado:", carrinho);
-        }
-    
-  
-      console.log("✅ ID do carrinho a ser usado:", carrinho?.ID);
-  
-      const precoUnitario = produto.preco;
-      const total = precoUnitario * quantidade;
-      console.log("💰 Valores calculados:", { precoUnitario, total });
-  
-      const resultItem = await INSERT.into(CarrinhoItem).entries({
-          carrinho_ID: carrinho.ID,
-          produto_ID: produtoID,
-          quantidade,
-          precoUnitario,
-          total
-      });
-      console.log("📦 Resultado do INSERT item:", resultItem);
-  
-      return `Produto ${produto.nome} adicionado ao carrinho de ${usuario}.`;
+  async function _getOrCreateCart (tx, usuario) {
+    let cart = await tx.run(SELECT.one.from(Carrinho).where({ usuario }));
+    if (!cart) {
+      await tx.run(INSERT.into(Carrinho).entries({ usuario }));
+      cart = await tx.run(SELECT.one.from(Carrinho).where({ usuario }));
+    }
+    return cart;
+  }
+
+  /** -------------------- ADD TO CART (não debita estoque) -------------------- */
+  this.on('addToCart', async (req) => {
+    const { usuario, produtoID, quantidade, esperaProducao } = req.data;
+    const qtd = Math.max(1, Number(quantidade) || 1);
+    const aguard = !!esperaProducao;
+
+    const tx = cds.transaction(req);
+
+    const produto = await tx.run(
+      SELECT.one.from(Produtos).columns('ID','nome','preco','estoque').where({ ID: produtoID })
+    );
+    if (!produto) return req.reject(404, 'Produto não encontrado');
+
+    const estoqueAtual = Number(produto.estoque || 0);
+    if (qtd > estoqueAtual && !aguard) {
+      return req.reject(409, `Quantidade indisponível. Disponíveis: ${estoqueAtual}.`);
+    }
+
+    const cart = await _getOrCreateCart(tx, usuario);
+
+    const existente = await tx.run(
+      SELECT.one.from(CarrinhoItem).where({ carrinho_ID: cart.ID, produto_ID: produtoID })
+    );
+
+    const unit = Number(produto.preco || 0);
+    if (existente) {
+      const novaQtd = Number(existente.quantidade || 0) + qtd;
+      await tx.run(
+        UPDATE(CarrinhoItem)
+          .set({ quantidade: novaQtd, precoUnitario: unit, total: novaQtd * unit })
+          .where({ ID: existente.ID })
+      );
+    } else {
+      await tx.run(
+        INSERT.into(CarrinhoItem).entries({
+          carrinho_ID   : cart.ID,
+          produto_ID    : produtoID,
+          quantidade    : qtd,
+          precoUnitario : unit,
+          total         : unit * qtd
+        })
+      );
+    }
+
+    // 🚫 Não debita estoque aqui!
+    return `Produto "${produto.nome}" adicionado (x${qtd}).`;
   });
-  
 
-    this.on('removeFromCart', async (req) => {
-        const { itemID } = req.data;
-        await DELETE.from(CarrinhoItem).where({ ID: itemID });
-        return `Item removido do carrinho.`;
-    });
+  /** -------------------- REMOVER ITEM DO CARRINHO -------------------- */
+  this.on('removeFromCart', async (req) => {
+    const { itemID } = req.data;
+    const tx = cds.transaction(req);
 
-    this.on('finalizarPedido', async (req) => {
-        const { usuario } = req.data;
-        console.log("📥 Dados recebidos no finalizarPedido:", { usuario });
-    
-        console.log("📋 Entidades disponíveis no serviço:", Object.keys(this.entities));
-    
-        const carrinhoEntity = this.entities.Carrinho;
-        console.log("🔍 Entidade Carrinho usada:", carrinhoEntity?.name);
-    
-        // Buscar carrinho do usuário
-        let carrinho;
-        try {
-            carrinho = await SELECT.one.from(carrinhoEntity).where({ usuario });
-            console.log("🛒 Carrinho encontrado:", carrinho);
-        } catch (err) {
-            console.error("❌ Erro ao buscar carrinho:", err);
-            throw err;
-        }
-    
-        if (!carrinho) return req.error(404, 'Carrinho não encontrado');
-    
-        // Buscar itens do carrinho
-        let itensCarrinho;
-        try {
-            itensCarrinho = await SELECT.from(this.entities.CarrinhoItem)
-                .where({ carrinho_ID: carrinho.ID });
-            console.log("📦 Itens do carrinho encontrados:", itensCarrinho);
-        } catch (err) {
-            console.error("❌ Erro ao buscar itens do carrinho:", err);
-            throw err;
-        }
-    
-        if (itensCarrinho.length === 0) return req.error(400, 'Carrinho vazio');
-    
-        // Buscar produtos da entidade base para calcular valores
-        const { Produtos: ProdutosBase } = cds.entities('my.vendas');
-        for (const item of itensCarrinho) {
-            const produto = await SELECT.one.from(ProdutosBase).where({ ID: item.produto_ID });
-            item.precoUnitario = produto.preco;
-            item.total = produto.preco * item.quantidade;
-        }
-    
-        const totalPedido = itensCarrinho.reduce((acc, item) => acc + Number(item.total), 0);
-        console.log("💰 Total do pedido:", totalPedido);
-    
-        // Criar pedido com data atual
-        const dataAgora = new Date().toISOString();
-        await INSERT.into(this.entities.Pedidos).entries({
-            usuario,
-            dataPedido: dataAgora, // ✅ Força data/hora atual
-            status: 'Pendente',
-            total: totalPedido
-        });
-    
-        // Buscar o último pedido criado para este usuário
-        const pedido = await SELECT.one.from(this.entities.Pedidos)
-            .where({ usuario })
-            .orderBy({ dataPedido: 'desc' });
-        console.log("🆕 Pedido criado:", pedido);
-    
-        // Criar itens do pedido
-        for (const item of itensCarrinho) {
-            await INSERT.into(this.entities.PedidoItem).entries({
-                pedido_ID: pedido.ID,
-                produto_ID: item.produto_ID,
-                quantidade: item.quantidade,
-                precoUnitario: item.precoUnitario,
-                total: item.total
-            });
-        }
-    
-        // Limpar carrinho
-        await DELETE.from(this.entities.CarrinhoItem).where({ carrinho_ID: carrinho.ID });
-        console.log("🗑 Carrinho limpo para usuário:", usuario);
-    
-        return `Pedido ${pedido.ID} criado com sucesso! Total: R$ ${totalPedido}`;
-    });
-    
-    this.on('realizarPagamento', async (req) => {
-        const { pedidoID, formaPagamento } = req.data;
-        console.log("💳 Realizando pagamento:", { pedidoID, formaPagamento });
-    
-        // Lista de formas válidas do enum TipoPagamento
-        const formasValidas = ["PIX", "CARTAO_CREDITO", "CARTAO_DEBITO"];
-    
-        if (!pedidoID) {
-            return req.error(400, 'ID do pedido é obrigatório');
-        }
-    
-        if (!formaPagamento || !formasValidas.includes(formaPagamento)) {
-            return req.error(400, `Forma de pagamento inválida. Valores permitidos: ${formasValidas.join(", ")}`);
-        }
-    
-        const { Pedidos } = this.entities;
-        const pedido = await SELECT.one.from(Pedidos).where({ ID: pedidoID });
-        console.log("🔍 Pedido encontrado:", pedido);
-    
-        if (!pedido) {
-            return req.error(404, 'Pedido não encontrado');
-        }
-    
-        if (pedido.status === 'Pago') {
-            return `O pedido ${pedidoID} já foi pago.`;
-        }
-    
-        // Atualizar status e forma de pagamento
-        await UPDATE(Pedidos)
-            .set({ status: 'Pago', formaPagamento })
-            .where({ ID: pedidoID });
-    
-        console.log("✅ Pagamento confirmado para o pedido:", pedidoID, "Forma:", formaPagamento);
-    
-        return `Pagamento realizado com sucesso para o pedido ${pedidoID} via ${formaPagamento}.`;
-    });
-    
-    this.on('getTotalCarrinho', async req => {
-        const { usuario }          = req.data
-        const { Carrinho, CarrinhoItem } = this.entities
-      
-        // procura carrinho
-        const carrinho = await SELECT.one.from(Carrinho).where({ usuario })
-        if (!carrinho) return { value : "R$ 0,00" }
-      
-        // soma
-        const { total } = await SELECT.one.from(CarrinhoItem)
-              .columns`sum(total) as total`
-              .where({ carrinho_ID: carrinho.ID })
-      
-        const valor = Number(total || 0).toLocaleString(
-                       "pt-BR", { style:"currency", currency:"BRL" }) // "R$ 13.300,00"
-      
-        return { value : valor }          //  ←  sempre nesse formato
-      });
+    const item = await tx.run(SELECT.one.from(CarrinhoItem).where({ ID: itemID }));
+    if (!item) return req.reject(404, 'Item do carrinho não encontrado');
 
-      this.on('cancelarPedido', async (req) => {
-        const { pedidoID } = req.data;
-        const tx = cds.transaction(req);
-    
-        // use o FQN do seu entity set no domínio: my.vendas.Pedidos
-        await tx.run(
-          UPDATE('my.vendas.Pedidos')
-            .set({ status: 'CANCELADO' })
-            .where({ ID: pedidoID })
+    await tx.run(DELETE.from(CarrinhoItem).where({ ID: itemID }));
+    return 'Item removido do carrinho.';
+  });
+
+  /** -------------------- FINALIZAR PEDIDO (debita aqui, de forma atômica) -------------------- */
+  this.on('finalizarPedido', async (req) => {
+    const { usuario, esperaProducao } = req.data;
+    const aguard = !!esperaProducao;
+    const tx = cds.transaction(req);
+
+    // 1) Carrinho & Itens
+    const carrinho = await tx.run(SELECT.one.from(Carrinho).where({ usuario }));
+    if (!carrinho) return req.reject(404, 'Carrinho não encontrado para este usuário.');
+
+    const itens = await tx.run(
+      SELECT.from(CarrinhoItem).where({ carrinho_ID: carrinho.ID })
+    );
+    if (!itens || itens.length === 0) return req.reject(404, 'Carrinho vazio.');
+
+    // 2) Produtos (snapshot)
+    const ids = itens.map(i => i.produto_ID);
+    const prods = await tx.run(
+      SELECT.from(Produtos).columns('ID','nome','estoque','preco').where({ ID: { in: ids } })
+    );
+    const byId = Object.fromEntries(prods.map(p => [p.ID, p]));
+
+    // 3) Se NÃO vamos aguardar produção, já levante faltas com base no snapshot
+    const faltas = [];
+    if (!aguard) {
+      for (const it of itens) {
+        const p = byId[it.produto_ID];
+        if (!p) {
+          faltas.push({ produtoID: it.produto_ID, nome: '(produto não encontrado)', disponivel: 0, solicitada: it.quantidade, faltam: it.quantidade });
+          continue;
+        }
+        const est = Number(p.estoque || 0);
+        const q   = Number(it.quantidade || 0);
+        if (q > est) {
+          faltas.push({ produtoID: p.ID, nome: p.nome, disponivel: est, solicitada: q, faltam: q - est });
+        }
+      }
+      if (faltas.length) {
+        const msg = 'Estoque insuficiente: ' + faltas.map(f => `${f.nome} (disp. ${f.disponivel}, faltam ${f.faltam})`).join('; ');
+        return req.reject(409, msg);
+      }
+    }
+
+    // 4) Cria Pedido (dentro da mesma transação)
+    const pedidoID = cds.utils.uuid();
+    const total = itens.reduce((acc, it) => {
+      const p = byId[it.produto_ID];
+      const unit = Number(p?.preco ?? it.precoUnitario ?? 0);
+      return acc + unit * Number(it.quantidade || 0);
+    }, 0);
+
+    await tx.run(
+      INSERT.into(Pedidos).entries({
+        ID: pedidoID,
+        usuario,
+        status: 'PENDENTE',
+        total
+      })
+    );
+
+    // 5) Debita estoques de forma atômica + cria itens do pedido
+    const conflitosConcorrencia = [];
+    for (const it of itens) {
+      const p = byId[it.produto_ID];
+      const unit = Number(p?.preco ?? it.precoUnitario ?? 0);
+      const q = Number(it.quantidade || 0);
+      const est = Number(p?.estoque || 0);
+
+      // Se aguardar produção, debita somente o que existir, sem ficar negativo:
+      const pretendido = aguard ? Math.min(q, est) : q;
+
+      if (pretendido > 0 && p) {
+        // UPDATE atômico: só aplica se o estoque atual no DB ainda é o que lemos
+        const novoEstoque = est - pretendido;
+        const affected = await tx.run(
+          UPDATE(Produtos)
+            .set({ estoque: novoEstoque })
+            .where({ ID: p.ID, estoque: est })
         );
-    
-        return `Pedido ${pedidoID} cancelado com sucesso!`;
-      });
-                                                                                              
+
+        if (!affected) {
+          // alguém alterou o estoque entre o snapshot e o UPDATE
+          conflitosConcorrencia.push(p.nome);
+        } else {
+          // refletir no snapshot local para próximos itens do mesmo produto (raro, mas seguro)
+          byId[p.ID].estoque = novoEstoque;
+        }
+      }
+
+      // Cria item do pedido independente (se não houve rejeição global)
+      await tx.run(
+        INSERT.into(PedidoItem).entries({
+          ID: cds.utils.uuid(),
+          pedido_ID    : pedidoID,
+          produto_ID   : it.produto_ID,
+          quantidade   : q,
+          precoUnitario: unit,
+          total        : unit * q
+        })
+      );
+    }
+
+    if (conflitosConcorrencia.length && !aguard) {
+      // Estouro por concorrência → faz rollback retornando 409
+      return req.reject(409, `Estoque alterado por outra operação: ${conflitosConcorrencia.join(', ')}. Tente novamente.`);
+    }
+
+    // 6) Limpa carrinho
+    await tx.run(DELETE.from(CarrinhoItem).where({ carrinho_ID: carrinho.ID }));
+
+    return `Pedido criado com sucesso (ID: ${pedidoID}). Total R$ ${total.toFixed(2)}.`;
+  });
+
+  /** -------------------- PAGAMENTO -------------------- */
+  this.on('realizarPagamento', async (req) => {
+    const { pedidoID, formaPagamento } = req.data;
+    const formasValidas = ["PIX", "CARTAO_CREDITO", "CARTAO_DEBITO"];
+
+    if (!pedidoID) return req.error(400, 'ID do pedido é obrigatório');
+    if (!formaPagamento || !formasValidas.includes(formaPagamento)) {
+      return req.error(400, `Forma de pagamento inválida. Valores permitidos: ${formasValidas.join(", ")}`);
+    }
+
+    const pedido = await SELECT.one.from(Pedidos).where({ ID: pedidoID });
+    if (!pedido) return req.error(404, 'Pedido não encontrado');
+    if (pedido.status === 'Pago') return `O pedido ${pedidoID} já foi pago.`;
+
+    await UPDATE(Pedidos)
+      .set({ status: 'Pago', formaPagamento })
+      .where({ ID: pedidoID });
+
+    return `Pagamento realizado com sucesso para o pedido ${pedidoID} via ${formaPagamento}.`;
+  });
+
+  /** -------------------- TOTAL DO CARRINHO -------------------- */
+  this.on('getTotalCarrinho', async req => {
+    const { usuario } = req.data;
+    const carrinho = await SELECT.one.from(Carrinho).where({ usuario });
+    if (!carrinho) return { value : "R$ 0,00" };
+
+    const { total } = await SELECT.one.from(CarrinhoItem)
+      .columns`sum(total) as total`
+      .where({ carrinho_ID: carrinho.ID });
+
+    const valor = Number(total || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+    return { value : valor };
+  });
+
+  /** -------------------- CANCELAR PEDIDO -------------------- */
+  this.on('cancelarPedido', async (req) => {
+    const { pedidoID } = req.data;
+    const tx = cds.transaction(req);
+
+    await tx.run(
+      UPDATE('my.vendas.Pedidos')
+        .set({ status: 'CANCELADO' })
+        .where({ ID: pedidoID })
+    );
+
+    return `Pedido ${pedidoID} cancelado com sucesso!`;
+  });
 });

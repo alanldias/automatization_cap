@@ -13,7 +13,7 @@
         <customHeader>
             <Bar id="barProductHeader" design="Auto">
 
-                <!-- Botão Voltar + Logo -->
+                <!-- Logo -->
                 <contentLeft>
                     <Image
                         id="imgLogoDetail"
@@ -31,6 +31,7 @@
                         level="H2" />
                 </contentMiddle>
 
+                <!-- Voltar -->
                 <contentRight>
                     <Button
                         id="btnBackFromDetail"
@@ -50,6 +51,7 @@
                 <Image
                     id="imgDetailProduct"
                     src="{imagem}"
+                    width="100%"
                     height="240px"
                     densityAware="false"
                     decorative="false"
@@ -76,14 +78,31 @@
                     unit="R$"
                     class="detailPrice sapUiMediumMarginTop"/>
 
-                <!-- Botão Adicionar ao carrinho -->
-                <Button
-                    id="btnDetailAddCart"
-                    text="Adicionar ao Carrinho"
-                    icon="sap-icon://cart"
-                    type="Emphasized"
-                    press=".onAddToCart"
-                    class="sapUiMediumMarginTop"/>
+                <!-- Quantidade + Adicionar -->
+                <HBox
+                    id="hboxQtyAndAddDetail"
+                    alignItems="Center"
+                    justifyContent="Start"
+                    class="sapUiMediumMarginTop">
+
+                    <StepInput
+                        id="stepQtyDetail"
+                        width="6rem"
+                        min="1"
+                        max="999"
+                        step="1"
+                        value="1"
+                        textAlign="Center" />
+
+                    <Button
+                        id="btnDetailAddCart"
+                        text="Adicionar ao Carrinho"
+                        icon="sap-icon://cart"
+                        type="Emphasized"
+                        press=".onAddToCart"
+                        class="sapUiTinyMarginBegin"/>
+                </HBox>
+
             </VBox>
         </content>
     </Page>

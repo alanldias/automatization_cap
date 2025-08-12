@@ -21,9 +21,9 @@ service VendasService {
     produto : redirected to Produtos
   };
 
-  action addToCart           (usuario : String, produtoID : UUID, quantidade : Integer) returns String;
+  action addToCart           (usuario : String, produtoID : UUID, quantidade : Integer, esperaProducao: Boolean) returns String;
   action removeFromCart      (itemID  : UUID)                                         returns String;
-  action finalizarPedido     (usuario : String)                                       returns String;
+  action finalizarPedido     (usuario : String, esperaProducao : Boolean)                                       returns String;
   action realizarPagamento   (pedidoID: UUID, formaPagamento: String)                 returns String;
   action calcularTotalCarrinho(usuario : String)                                    returns String;
   action cancelarPedido      (pedidoID : UUID)                                       returns String;

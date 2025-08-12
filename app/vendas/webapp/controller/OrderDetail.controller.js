@@ -30,8 +30,8 @@ sap.ui.define([
     formatOrderStatusState(sStatus) {
       switch (sStatus) {
         case "Pago": return "Success";
-        case "Pendente": return "Warning";
-        case "Cancelado": return "Error";
+        case "PENDENTE": return "Warning";
+        case "CANCELADO": return "Error";
         default: return "None";
       }
     },
@@ -46,8 +46,8 @@ sap.ui.define([
         : "";
     },
 
-    isPayEnabled: s => s === "Pendente",
-    isCancelEnabled: s => s === "Pendente",
+    isPayEnabled: s => s === "PENDENTE",
+    isCancelEnabled: s => s === "PENDENTE",
 
     onNavBack: function () {
       this.getOwnerComponent().getRouter().navTo("Orders", {}, true);
