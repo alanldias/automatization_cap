@@ -83,6 +83,7 @@ async function calcularRotaMultipla(pedidos, cdOrigem) {
 
     return {
       success: true,
+      distanceKm: Math.round(route.distance / 1000),
       geometry: route.geometry,
       steps   : route.segments?.flatMap(seg => seg.steps) || [],
       pedidosOrdenados,

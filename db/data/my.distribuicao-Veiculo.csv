@@ -3,7 +3,7 @@ ID,nome,placa,capacidade,capacidadeAtual,emUso,status,centro_ID
 "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e","Fiorino Turbo","RJZ1H25",650,0,true,"EmRota","c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f" 
 "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f","Caminhão Toco","GHT4F01",6000,0,false,"Manutencao","a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
 "d3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6a7f","Carreta 3 Eixos","PRX3J48",25000,0,true,"EmRota","a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
-"ced7fd2b-92bd-44f2-85a2-6aef5d9e1beb","Van de Carga","SPW9I77",1500,0,false,"Disponivel","a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+"ced7fd2b-92bd-44f2-85a2-6aef5d9e1beb","Van de Carga Disponivel","SPW9I77",1500,0,false,"Disponivel","a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
 "cb0a9bb6-182b-4a9a-bda6-9bafba602de7","Caminhão Truck","MGY7G33",14000,0,false,"Disponivel","b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
 "a0b1c2d3-e4f5-4a6b-7c8d-9e0f1a2b3c3d","VUC Express SP","BRA2E19",3000,0,false,"Disponivel","a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
 "60a76873-f580-45a8-a2ba-913a86783b97","VUC Express PR Disponivel 2","BRA2E20",3,0,false,"Disponivel","c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
