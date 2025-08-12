@@ -32,6 +32,7 @@ sap.ui.define([
       iEntAtual = 0;
       simuladorPausado = false;
       entregasConfirmadas.clear();
+
       const oModel = this.getView().getModel();
       const sCodigo = this.byId("inputCodigo").getValue().trim();
 
@@ -43,13 +44,29 @@ sap.ui.define([
         if (!oResult.success) throw new Error(oResult.message);
 
         this._codigoRastreio = sCodigo;
-        this._geometryEncoded = oResult.geometry;
-        this._aSteps = JSON.parse(oResult.etapasRota || "[]");
-        this._aDestinos = JSON.parse(oResult.destinos || "[]");
 
-        this._aRastreios = JSON.parse(oResult.sequenciaRastreios || "[]");
+        // 👇 cada campo pode vir como string JSON ou array/objeto
+        const rawSteps = oResult.etapasRota;
+        const rawDestinos = oResult.destinos;
+        const rawSeq = oResult.sequenciaRastreios;
+
+        this._geometryEncoded = oResult.geometry;
+        this._aSteps = Array.isArray(rawSteps) ? rawSteps : JSON.parse(rawSteps || "[]");
+        this._aDestinos = Array.isArray(rawDestinos) ? rawDestinos : JSON.parse(rawDestinos || "[]");
+        this._aRastreios = Array.isArray(rawSeq) ? rawSeq : JSON.parse(rawSeq || "[]");
+
         if (!this._aRastreios.length && this._codigoRastreio) {
           this._aRastreios = [this._codigoRastreio];
+        }
+
+        // sanity: destinos e rastreios devem ter o MESMO tamanho
+        if (this._aDestinos.length !== this._aRastreios.length) {
+          console.warn("[SIM] destinos != rastreios",
+            this._aDestinos.length, this._aRastreios.length, this._aRastreios);
+          // segue com o mínimo comum pra não quebrar
+          const n = Math.min(this._aDestinos.length, this._aRastreios.length);
+          this._aDestinos = this._aDestinos.slice(0, n);
+          this._aRastreios = this._aRastreios.slice(0, n);
         }
 
         this._horarioEntrega = oResult.horarioEntrega;
@@ -70,13 +87,7 @@ sap.ui.define([
     _drawMap: function () {
       if (!window.L || !window.polyline || !this._geometryEncoded) return;
 
-      if ((!this._aDestinos || !this._aDestinos.length) && this._geometryEncoded) {
-        const last = polyline.decode(this._geometryEncoded).slice(-1)[0];
-        this._aDestinos = [last];
-      }
-
-      const aLatLngs = polyline.decode(this._geometryEncoded)
-        .map(([lat, lon]) => [lat, lon]);
+      const aLatLngs = polyline.decode(this._geometryEncoded).map(([lat, lon]) => [lat, lon]);
 
       if (this._leafletMap) { this._leafletMap.remove(); this._leafletMap = null; }
 
@@ -101,27 +112,26 @@ sap.ui.define([
         iconSize: [32, 32], iconAnchor: [16, 32]
       });
 
-      L.marker(aLatLngs[0], { icon: oIconOrigem })
-        .addTo(this._leafletMap).bindPopup("Origem");
+      L.marker(aLatLngs[0], { icon: oIconOrigem }).addTo(this._leafletMap).bindPopup("Origem");
 
+      // 👇 marcadores numerados na ordem
       (this._aDestinos || []).forEach(([lat, lon], idx) => {
         L.marker([lat, lon], { icon: oIconCasa })
-          .addTo(this._leafletMap).bindPopup(`Entrega ${idx + 1}`);
+          .addTo(this._leafletMap)
+          .bindPopup(`Entrega ${idx + 1}`);
       });
     },
 
     _simularEntrega: async function (aSteps) {
-      if (!this._aRastreios?.length && this._codigoRastreio) {
-        this._aRastreios = [this._codigoRastreio];
+      if (!this._aRastreios?.length || !this._geometryEncoded) return;
+
+      if (!this._aDestinos?.length) {
+        console.warn("[SIM] Sem destinos – abortado");
+        return;
       }
 
-      if ((!this._aDestinos || !this._aDestinos.length) && this._geometryEncoded) {
-        const last = polyline.decode(this._geometryEncoded).slice(-1)[0];
-        this._aDestinos = [last];
-      }
-
-      if (!aSteps?.length || !this._aRastreios?.length) {
-        console.warn("[SIM] Sem steps ou rastreios – abortado");
+      if (this._aDestinos.length !== this._aRastreios.length) {
+        console.warn("[SIM] destinos != rastreios – abortado");
         return;
       }
 

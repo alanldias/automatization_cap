@@ -245,17 +245,24 @@ sap.ui.define([
 
       const oModel = this.getView().getModel();
 
-      // 👇 ACTION via operation binding (POST)
       const oOp = oModel.bindContext("/listarVeiculosDisponiveis(...)");
       oOp.setParameter("centroId", sCentroId);
 
       await oOp.execute();
       const res = await oOp.requestObject();
-
-      // CAP + UI5 podem devolver array direto ou { value: [...] }
       const aVeiculos = Array.isArray(res) ? res : (res && res.value) ? res.value : [];
 
       this.getView().setModel(new sap.ui.model.json.JSONModel({ veiculos: aVeiculos }), "vmVeic");
+
+      // 👇👇 RESETA seleção anterior do ComboBox!
+      const sFragId = this.getView().getId();
+      const cb = sap.ui.core.Fragment.byId(sFragId, "cbVeiculos");
+      cb?.setSelectedItem(null);
+      cb?.setSelectedKey("");  // força o usuário a escolher de novo
+
+      // snapshot do centro usado ao abrir o diálogo (defesa extra)
+      this._centroAtivoNoDialog = sCentroId;
+
       this._dlgVeiculo.open();
     },
 
@@ -268,17 +275,23 @@ sap.ui.define([
       const sFragId = this.getView().getId();
       const oDlg = sap.ui.core.Fragment.byId(sFragId, "dlgSelecionarVeiculo");
       const cb = sap.ui.core.Fragment.byId(sFragId, "cbVeiculos");
+
+      // defesa: centro atual deve ser o mesmo do momento em que abriu o diálogo
+      const centroAtual = this.byId("cbCentro").getSelectedKey();
+      if (this._centroAtivoNoDialog && centroAtual !== this._centroAtivoNoDialog) {
+        return sap.m.MessageBox.warning(
+          "O centro foi alterado. Reabra o diálogo de veículos para este centro."
+        );
+      }
+
       const veiculoId = cb.getSelectedKey();
       if (!veiculoId) return sap.m.MessageBox.warning("Escolha um caminhão.");
 
       const aIds = this._oSelecionados.map(p => p.pedidoID);
       const oModel = this.getView().getModel();
-
       oDlg?.setBusy(true);
 
-      const oCtx = oModel.bindContext("/selecionarPedidosParaVeiculo(...)", null, {
-        $$groupId: "$direct"         // 👈 evita $batch
-      })
+      const oCtx = oModel.bindContext("/selecionarPedidosParaVeiculo(...)", null, { $$groupId: "$direct" })
         .setParameter("veiculoId", veiculoId)
         .setParameter("pedidos", aIds);
 
@@ -326,19 +339,19 @@ sap.ui.define([
     },
 
     onAtualizarPedidos: function () {
-            const oModel = this.getView().getModel(); // ODataModel V4
-            if (oModel && oModel.refresh) {
-                oModel.refresh(); // força reload do back
-            }
+      const oModel = this.getView().getModel(); // ODataModel V4
+      if (oModel && oModel.refresh) {
+        oModel.refresh(); // força reload do back
+      }
 
-            // Limpa seleção atual
-            const oViewModel = this.getView().getModel("vmSel");
-            if (oViewModel) {
-                oViewModel.setData({}); // limpa detalhe
-            }
+      // Limpa seleção atual
+      const oViewModel = this.getView().getModel("vmSel");
+      if (oViewModel) {
+        oViewModel.setData({}); // limpa detalhe
+      }
 
-            sap.m.MessageToast.show("Lista de veículos atualizada!");
-        }
+      sap.m.MessageToast.show("Lista de veículos atualizada!");
+    }
 
   });
 });
