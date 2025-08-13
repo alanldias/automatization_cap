@@ -24,3 +24,12 @@ Content-Type: application/json
   "aprovado": true
 }
 
+
+###
+POST http://localhost:4004/odata/v4/mm/aprovarRequisicaoCompra
+Content-Type: application/json
+
+{
+  "requisicao_ID": "e5a420ef-f9d9-47be-adcd-6e109c2f400a",
+  "aprovado": true
+}
