@@ -11,7 +11,15 @@ module.exports = async function (req) {
   );
 
   if (!ordem) return req.error(404, 'Ordem de produção não encontrada.');
-  if (ordem.status === 'concluido') return req.error(400, 'Produção já concluída.');
+
+  // 🔒 Só permite confirmar quando pendente ou em_producao
+  if (!['pendente', 'em_producao'].includes(ordem.status)){
+    if (ordem.status === 'concluido') return req.error(400, 'Produção já concluída.')
+    if (ordem.status === 'aguardando_aprovacao') return req.error(400, 'OP aguardando aprovação. Não é possível confirmar.')
+    if (ordem.status === 'negado') return req.error(400, 'OP negada. Não é possível confirmar.')  
+      
+    return req.error(400, `Status "${ordem.status}" não permite confirmação.`)
+  }
 
   const { produto_ID_ID, quantidade } = ordem;
 
