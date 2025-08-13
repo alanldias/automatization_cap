@@ -31,7 +31,8 @@
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
     "cds-watch": "cds watch --open",
     "watch-distribuicao": "cds watch --open distribuicao/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-producao": "cds watch --open producao/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-producao": "cds watch --open producao/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-aprovacao-fi": "cds watch --open aprovacao-fi/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {

@@ -13,19 +13,6 @@ module.exports = async function (req) {
   );
   if (!op) return req.error(404, 'Ordem não encontrada.');
 
-  if(!op.centroCusto_ID_ID){
-    return req.error(400, 'Ordem sem centro de custo vinculado.')
-  }
-  const [centroCusto] = await tx.run(
-    SELECT.from('my.modulomm.CentroCusto').where({ ID: op.centroCusto_ID_ID })
-  )
-  if(!centroCusto) {
-    return req.error(400, 'Centro de Custo inexistente.')
-  }
-  if(!centroCusto.aprovado){
-    return req.error(400, 'Centro de Custo não aprovado.')
-  }
-  
   if (!aprovado) {
     await tx.run(
       UPDATE('my.modulomm.OrdemProducao')
@@ -35,6 +22,16 @@ module.exports = async function (req) {
     req.info(200, 'Ordem reprovada.');
     return true;
   }
+
+  // 🔒 (somente para APROVAR) Centro de Custo deve existir e estar aprovado
+  if (!op.centroCusto_ID_ID) {
+    return req.error(400, 'Ordem sem centro de custo vinculado.');
+  }
+  const [cc] = await tx.run(
+    SELECT.from('my.modulomm.CentroCusto').where({ ID: op.centroCusto_ID_ID })
+  );
+  if (!cc) return req.error(400, 'Centro de Custo inexistente.');
+  if (!cc.aprovado) return req.error(400, 'Centro de Custo não aprovado.');
 
   // ✅ 1) Confirma MP suficiente agora (BOM * quantidade da OP)
   const componentes = await tx.run(

@@ -1,0 +1,126 @@
+<mvc:View
+  controllerName="telaaprovacaofi.aprovacaofi.controller.telaFI"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Page id="pageFi" showHeader="false">
+    <VBox id="vbox">
+
+      <!-- Cabeçalho -->
+      <Toolbar id="toolbar" class="cabecalhoTopo sapUiSmallMarginBottom">
+        <HBox id="hbox" width="100%" alignItems="Center" justifyContent="SpaceBetween">
+          <HBox id="hbox1" alignItems="Center">
+            <Image id="image"
+              src="https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg"
+              height="2rem"
+              width="auto"
+              class="sapUiTinyMarginBegin" />
+          </HBox>
+
+          <HBox id="hbox2" width="100%" justifyContent="Center">
+            <Text id="text" text="Aprovação de Ordens de Produção — Financeiro (FI)" class="cabecalhoTexto" />
+          </HBox>
+
+          <HBox id="hbox3" width="auto">
+            <Button id="button" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+          </HBox>
+        </HBox>
+      </Toolbar>
+
+      <!-- Duas colunas lado a lado -->
+      <HBox id="hbox4" width="100%" renderType="Bare" class="sapUiSmallMarginBottom" justifyContent="SpaceBetween">
+
+        <!-- Coluna Esquerda: Aguardando aprovação -->
+        <VBox id="vbox1" width="49%">
+          <Toolbar id="toolbar1">
+            <Title id="title" text="Aguardando aprovação" level="H4"/>
+            <ToolbarSpacer id="toolbarspacer"/>
+            <Button id="button1" text="Vincular CC" icon="sap-icon://chain-link" press=".onVincularCC_Aguard"/>
+            <Button id="button2" text="Aprovar" icon="sap-icon://accept" type="Emphasized" press=".onAprovar_Aguard"/>
+            <Button id="button3" text="Negar" icon="sap-icon://decline" type="Reject" press=".onNegar_Aguard"/>
+          </Toolbar>
+
+          <Table
+            id="tableOPAguard"
+            mode="SingleSelectMaster"
+            class="tabelaComBorda"
+            growing="true"
+            items="{
+              path: '/OrdensProducao',
+              parameters: {
+                $filter: 'status eq \'aguardando_aprovacao\'',
+                $orderby: 'createdAt asc, ID asc'
+              }
+            }">
+            <columns>
+              <Column id="column"><Text id="text1" text="Produto"/></Column>
+              <Column id="column1" width="8rem"><Text id="text2" text="Qtd"/></Column>
+              <Column id="column2" width="14rem"><Text id="text3" text="Centro de Custo"/></Column>
+              <Column id="column3" width="12rem"><Text id="text4" text="Status"/></Column>
+              <Column id="column4" width="18rem"><Text id="text5" text="Motivo"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem id="columnlistitem" type="Active" press=".onRowPressAguard">
+                <cells>
+                  <Text id="text6" text="{produto_nome}"/>
+                  <Text id="text7" text="{quantidade}"/>
+                  <ObjectIdentifier id="object"
+                    title="{path: 'centroCusto_ID_ID'}"
+                    text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"/>
+                  <ObjectStatus id="objectstatus" text="{status}" state="Warning"/>
+                  <Text id="text8" text="{= ${motivo} || '' }" maxLines="2"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </VBox>
+
+        <!-- Coluna Direita: Negadas -->
+        <VBox id="vbox2"width="49%">
+          <Toolbar id="toolbar3">
+            <Title id="title1" text="Ordens Negadas" level="H4"/>
+            <ToolbarSpacer id="toolbarspacer1"/>
+            <Button id="button4" text="Rever ordem" icon="sap-icon://reset" press=".onRever_Negada"/>
+          </Toolbar>
+
+          <Table
+            id="tableOPNegada"
+            mode="SingleSelectMaster"
+            class="tabelaComBorda"
+            growing="true"
+            items="{
+              path: '/OrdensProducao',
+              parameters: {
+                $filter: 'status eq \'negado\'',
+                $orderby: 'modifiedAt desc, createdAt desc'
+              }
+            }">
+            <columns>
+              <Column id="column5"><Text id="text9" text="Produto"/></Column>
+              <Column id="column6" width="8rem"><Text id="text10" text="Qtd"/></Column>
+              <Column id="column7" width="14rem"><Text id="text11" text="Centro de Custo"/></Column>
+              <Column id="column8" width="12rem"><Text id="text12" text="Status"/></Column>
+              <Column id="column9" width="18rem"><Text id="text13" text="Motivo da Negação"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem id="columnlistitem1" type="Active" press=".onRowPressNegada">
+                <cells>
+                  <Text id="text14" text="{produto_nome}"/>
+                  <Text id="text15" text="{quantidade}"/>
+                  <ObjectIdentifier id="object2"
+                    title="{path: 'centroCusto_ID_ID'}"
+                    text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"/>
+                  <ObjectStatus id="objectstatus2" text="{status}" state="Error"/>
+                  <Text id="text16" text="{= ${motivo} || '' }" maxLines="2"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </VBox>
+
+      </HBox>
+
+    </VBox>
+  </Page>
+</mvc:View>

@@ -9,6 +9,7 @@ const verificarEstoqueProduto = require('./handlers/produtos/verificarEstoquePro
 const aprovarOrdemProducao = require('./handlers/produtos/aprovarOrdemProducao');
 const aprovarRequisicaoCompra = require('./handlers/materia-prima/aprovarRequisicaoCompra');
 const verificarCapacidadeMaoDeObra = require('./handlers/shared/verificarCapacidadeMaoDeObra');
+const vincularCentroCusto = require('./handlers/produtos/vincularCentroCusto');
 
 module.exports = cds.service.impl(async function () {
   // Actions da v1 (Etapa 1)
@@ -20,4 +21,5 @@ module.exports = cds.service.impl(async function () {
   this.on('aprovarOrdemProducao', aprovarOrdemProducao);
   this.on('aprovarRequisicaoCompra', aprovarRequisicaoCompra);
   this.on('verificarCapacidadeMaoDeObra', verificarCapacidadeMaoDeObra);
+  this.on('vincularCentroCusto', vincularCentroCusto);
 });

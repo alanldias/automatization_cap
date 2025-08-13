@@ -1,0 +1,117 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "telaaprovacaofi.aprovacaofi",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.18.4",
+      "toolsId": "30857023-24b1-4688-bd7e-f70447d0212b"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/mm/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.139.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "telaaprovacaofi.aprovacaofi.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "telaaprovacaofi.aprovacaofi.view",
+        "async": true,
+        "viewPath": "telaaprovacaofi.aprovacaofi.view"
+      },
+      "routes": [
+        {
+          "name": "RoutetelaFI",
+          "pattern": ":?query:",
+          "target": [
+            "TargettelaFI"
+          ]
+        }
+      ],
+      "targets": {
+        "TargettelaFI": {
+          "id": "telaFI",
+          "name": "telaFI"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "telaaprovacaofi.aprovacaofi.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

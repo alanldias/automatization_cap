@@ -1,0 +1,1 @@
+using MMService as service from '../../srv/mm/mm-service';
