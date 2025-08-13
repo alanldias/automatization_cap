@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "produto_ID": "11111111-1111-1111-1111-111111111111",
-  "quantidade": 20
+  "quantidade": 1
 }
 
 ###
@@ -33,3 +33,25 @@ Content-Type: application/json
   "requisicao_ID": "e5a420ef-f9d9-47be-adcd-6e109c2f400a",
   "aprovado": true
 }
+
+###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+### Vincular a OP ao Centro de Custo NÃO aprovado (deve falhar na aprovação)
+PATCH http://localhost:4004/odata/v4/mm/OrdensProducao(47fd444a-e76d-4f0b-aac6-03c3eaa3bf66)
+Content-Type: application/json
+
+{
+  "centroCusto_ID_ID": "ccc11111-cccc-cccc-cccc-cccccccccccc"
+}
+
+###
+POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
+Content-Type: application/json
+
+{
+  "ordemProducao_ID": "47fd444a-e76d-4f0b-aac6-03c3eaa3bf66",
+  "aprovado": true
+}
+
+
+

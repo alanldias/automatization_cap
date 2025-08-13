@@ -13,6 +13,19 @@ module.exports = async function (req) {
   );
   if (!op) return req.error(404, 'Ordem não encontrada.');
 
+  if(!op.centroCusto_ID_ID){
+    return req.error(400, 'Ordem sem centro de custo vinculado.')
+  }
+  const [centroCusto] = await tx.run(
+    SELECT.from('my.modulomm.CentroCusto').where({ ID: op.centroCusto_ID_ID })
+  )
+  if(!centroCusto) {
+    return req.error(400, 'Centro de Custo inexistente.')
+  }
+  if(!centroCusto.aprovado){
+    return req.error(400, 'Centro de Custo não aprovado.')
+  }
+  
   if (!aprovado) {
     await tx.run(
       UPDATE('my.modulomm.OrdemProducao')
