@@ -108,7 +108,7 @@ function scoreNominatim(r, want) {
 function typePenaltyMapbox(feature) {
   // place_type: ["address"], ["street"], ["neighborhood"], ["locality"], ["place"], ["postcode"], …
   const t = (feature.place_type || [])[0] || '';
-  if (t === 'postcode') return 100;
+  if (t === 'postcode') return 100; //cep
   if (t === 'place' || t === 'locality') return 70;  // cidade/município
   if (t === 'neighborhood') return 50;
   return 0;

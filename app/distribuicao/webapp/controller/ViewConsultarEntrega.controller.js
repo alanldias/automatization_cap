@@ -135,7 +135,6 @@ sap.ui.define([
         return;
       }
 
-      await this._atualizarStatus(this._aRastreios[0], "EM_TRANSITO");
       console.log("[SIM] Início – rastreio", this._aRastreios[0], "EM_TRANSITO");
 
       if (oSimulador) clearInterval(oSimulador);
@@ -217,20 +216,6 @@ sap.ui.define([
       await new Promise(r => setTimeout(r, 200));
     },
 
-    _atualizarStatus: async function (sCodigo, sStatus) {
-      const oModel = this.getView().getModel();
-      try {
-        const oCtx = oModel.bindContext("/atualizarStatusEntrega(...)")
-          .setParameter("codigo", sCodigo)
-          .setParameter("novoStatus", sStatus);
-        await oCtx.execute();
-        return await oCtx.requestObject();
-      } catch (err) {
-        console.warn("Falha ao atualizar status:", err.message);
-        return null;
-      }
-    },
-
     _showEntregaToast: function (sPeriodoHora) {
       const txt = sPeriodoHora
         ? `✅ Pedido já foi entregue às ${sPeriodoHora}`
@@ -275,7 +260,6 @@ sap.ui.define([
       const nEnts = this._aRastreios.length;
 
       if (iEntAtual < nEnts) {
-        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
         console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
       } else {
         this._showEntregaToast("agora mesmo");
@@ -307,9 +291,6 @@ sap.ui.define([
         const res = await oCtx.requestObject();
         if (!res?.success) throw new Error(res?.message || "Falha ao registrar ocorrência");
 
-        // 3) status local (o back já marcou COM_PROBLEMAS, aqui só garantimos feedback)
-        await this._atualizarStatus(rastreio, "COM_PROBLEMAS");
-
         // 4) fecha dialog e avança a simulação
         this._oFragmentEntregador?.close();
         sap.m.MessageToast.show("Ocorrência registrada.");
@@ -317,7 +298,6 @@ sap.ui.define([
         iEntAtual++;
         const nEnts = this._aRastreios.length;
         if (iEntAtual < nEnts) {
-          await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
         } else {
           this._showEntregaToast("rota encerrada (ocorrência)");
         }
@@ -391,7 +371,7 @@ sap.ui.define([
       iEntAtual++;
       const nEnts = this._aRastreios.length;
       if (iEntAtual < nEnts) {
-        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
+        console.log("em transito")
       } else {
         this._showEntregaToast(res.horarioEntrega || "agora mesmo");
       }
@@ -418,9 +398,6 @@ sap.ui.define([
         return;
       }
 
-      /* 2. Marca a entrega como FALHOU (se fizer sentido) ----- */
-      await this._atualizarStatus(rastreio, "COM_PROBLEMAS")
-
       /* 3. Fecha o fragmento de cliente ----------------------- */
       this._oFragmentCliente.close();
       MessageToast.show("Ocorrência registrada – seguindo para a próxima entrega.");
@@ -430,7 +407,6 @@ sap.ui.define([
       const nEnts = this._aRastreios.length;
 
       if (iEntAtual < nEnts) {
-        await this._atualizarStatus(this._aRastreios[iEntAtual], "EM_TRANSITO");
         console.log("[SIM] Próximo rast.", this._aRastreios[iEntAtual], "EM_TRANSITO");
       } else {
         this._showEntregaToast("rota encerrada (falha registrada)");
