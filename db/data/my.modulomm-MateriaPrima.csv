@@ -1,3 +1,4 @@
 ID;nome;tipo;unidade;preco
-aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa;Madeira MDF;madeira;m2;25.00
-aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaaa;Parafuso;metal;un;0.30
+a1b2c3d4-0000-0000-0000-aaaaaaaaaaaa;Madeira MDF;madeira;m2;25.00
+b2c3d4e5-0000-0000-0000-bbbbbbbbbbbb;Parafuso;metal;un;0.30
+c3d4e5f6-0000-0000-0000-cccccccccccc;Cola;adesivo;l;10

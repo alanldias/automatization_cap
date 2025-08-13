@@ -1,1 +1,18 @@
-/* Enter your custom styles here */
+.cabecalhoTopo {
+  background-color: #354a5f;
+  padding: 1.5rem;
+}
+
+.cabecalhoTexto {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.tabelaComBorda td {
+  border-right: 1px solid white;
+}
+
+.tabelaComBorda td:last-child {
+  border-right: none; 
+}

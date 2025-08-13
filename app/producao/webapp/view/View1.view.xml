@@ -4,21 +4,34 @@
   xmlns="sap.m"
   xmlns:core="sap.ui.core">
 
-  <Page id="page" title="Ordens de Produção - Fábrica" showHeader="true">
+  <Page id="page" showHeader="false">
 
-    <VBox id="vboxcabecalho" class="sapUiSmallMargin">
-      <Toolbar id="cabecalho">
-        <Title id="texto" text="Ordens de Produção Abertas" />
-        <ToolbarSpacer id="espaco"/>
-        <Button id="botaoAtualizar" icon="sap-icon://refresh" press=".onAtualizar" tooltip="Atualizar lista" />
-      </Toolbar>
+    <VBox id="vboxcabecalho">
+    <Toolbar id="toolbarCabecalhoTopoNf" class="cabecalhoTopo sapUiSmallMarginBottom">
+            <HBox id="hboxCabecalhoNf" width="100%" alignItems="Center" justifyContent="SpaceBetween">
+                <HBox id="hboxEsquerdaNf" alignItems="Center">
+                    <Image id="logoTopoNf"
+                          src="https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg"
+                          height="2rem"
+                          width="auto"
+                          class="sapUiTinyMarginBegin" />
+                </HBox>
+                <HBox id="hboxCentroNf" width="100%" justifyContent="Center">
+                    <Text id="tituloCabecalhoNf"
+                          text="Ordens de Produção Abertas - Fabrica de Móveis"
+                          class="cabecalhoTexto" />
+                </HBox>
+                <HBox id="hboxDireitaNf" width="2rem" />
+            </HBox>
+        </Toolbar>
 
       <Table
   id="tableOrdensProducao" 
   items="{
     path: '/OrdensProducao',
     parameters: {
-      $filter: 'status eq \'pendente\''
+      $filter: 'status eq \'pendente\'',
+      $orderby: 'createdAt asc, ID asc'
     }
   }"
   mode="SingleSelectMaster"
@@ -27,30 +40,30 @@
 
         <columns>
           <Column id="coluna1">
-            <Text id="textoColuna1" text="ID" />
+            <Text id="textoColuna1" text="Produto" />
           </Column>
           <Column id="coluna5">
-            <Text id="textoColuna5" text="Produto" />
+            <Text id="textoColuna5" text="Quantidade" />
           </Column>
           <Column id="coluna2">
-            <Text id="textoColuna2" text="Quantidade" />
+            <Text id="textoColuna2" text="Prazo" />
           </Column>
           <Column id="coluna3">
             <Text id="textoColuna3" text="Status" />
           </Column>
           <Column id="coluna4">
-            <Text id="textoColuna4" text="Confirmação" />
+            <Text id="textoColuna4" text="Confirmar" />
           </Column>
         </columns>
 
         <items>
           <ColumnListItem id="tabela" type="Active">
             <cells>
-              <Text id="produto" text="{produto_ID_ID}" />
-              <Text id="nome" text="{produto_nome}" />
+              <Text id="produto" text="{produto_nome}" />
               <Text id="quantidade" text="{quantidade}" />
+              <Text id="terminar" text="{fimPrevisto}" />
               <ObjectStatus id="status" text="{status}" state="Warning"/>
-              <Button id="botaoPronto" text="Pronto!" type="Emphasized" press=".onConfirmarProducao" />
+              <Button id="botaoPronto" text="Finalizado!" type="Emphasized" press=".onConfirmarProducao" />
             </cells>
           </ColumnListItem>
         </items>

@@ -7,7 +7,7 @@ module.exports = async function gerarRequisicaoCompra(tx, materiaPrima_ID, quant
     INSERT.into('my.modulomm.RequisicaoCompra').entries({
       materiaPrima_ID: { ID: materiaPrima_ID }, 
       quantidade,
-      status: 'pendente',                    
+      status: 'aguardando_aprovacao',                    
     })
   );
 };

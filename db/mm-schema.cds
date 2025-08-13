@@ -58,7 +58,7 @@ quantidade : Integer;
 entity RequisicaoCompra : cuid, managed {
 materiaPrima_ID : Association to MateriaPrima;
 quantidade      : Integer;
-status          : StatusRequisicao default 'pendente';
+status          : StatusRequisicao default 'aguardando_aprovacao';
 motivo          : String(255);
 }
 
