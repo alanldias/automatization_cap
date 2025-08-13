@@ -17,7 +17,7 @@ module.exports = async function (req) {
     if (ordem.status === 'concluido') return req.error(400, 'Produção já concluída.')
     if (ordem.status === 'aguardando_aprovacao') return req.error(400, 'OP aguardando aprovação. Não é possível confirmar.')
     if (ordem.status === 'negado') return req.error(400, 'OP negada. Não é possível confirmar.')  
-      
+
     return req.error(400, `Status "${ordem.status}" não permite confirmação.`)
   }
 
@@ -25,7 +25,7 @@ module.exports = async function (req) {
 
   /* 2️⃣ BOM do produto */
   const componentes = await tx.run(
-    SELECT.from('my.modulomm.ComposicaoProduto').where({ produto_ID: produto_ID_ID })
+    SELECT.from('my.modulomm.ComposicaoProduto').where({ produto_ID_ID: produto_ID_ID })
   );
 
   if (!componentes.length)

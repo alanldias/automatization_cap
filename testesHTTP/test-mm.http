@@ -37,7 +37,7 @@ Content-Type: application/json
 ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ### Vincular a OP ao Centro de Custo NÃO aprovado (deve falhar na aprovação)
-PATCH http://localhost:4004/odata/v4/mm/OrdensProducao(47fd444a-e76d-4f0b-aac6-03c3eaa3bf66)
+PATCH http://localhost:4004/odata/v4/mm/OrdensProducao(360e38a7-e9ab-4da5-be0a-18f1878cf04d)
 Content-Type: application/json
 
 {
@@ -49,7 +49,7 @@ POST http://localhost:4004/odata/v4/mm/aprovarOrdemProducao
 Content-Type: application/json
 
 {
-  "ordemProducao_ID": "47fd444a-e76d-4f0b-aac6-03c3eaa3bf66",
+  "ordemProducao_ID": "360e38a7-e9ab-4da5-be0a-18f1878cf04d",
   "aprovado": true
 }
 

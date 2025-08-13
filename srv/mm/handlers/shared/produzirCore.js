@@ -1,6 +1,6 @@
 const cds = require('@sap/cds');
-const verificarMateriaPrima = require('../materia-prima/../materia-prima/verificarMateriaPrima');
-const gerarRequisicaoCompra = require('../materia-prima/../materia-prima/gerarRequisicaoCompra');
+const verificarMateriaPrima = require('../materia-prima/verificarMateriaPrima');
+const gerarRequisicaoCompra = require('../materia-prima/gerarRequisicaoCompra');
 
 module.exports = async function produzirCore (tx, { produto_ID, quantidade, req }) {
   // 1) BOM
