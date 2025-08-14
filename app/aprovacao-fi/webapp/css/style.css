@@ -1,1 +1,30 @@
-/* Enter your custom styles here */
+
+.cabecalhoTopo { background-color: #354a5f; padding: 1.5rem; }
+.cabecalhoTexto { color: #fff; font-size: 1.1rem; font-weight: bold; }
+
+.tabelaComBorda td { border-right: 1px solid white; }
+.tabelaComBorda td:last-child { border-right: none; }
+
+.noWrap .sapMObjectIdentifierText,
+.noWrap .sapMObjectIdentifierTitle {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Wrapper da tabela com altura fixa */
+.tableScrollShell {
+  height: 26rem;          /* altura exata para ~5 linhas + header */
+  overflow-y: auto;       /* scroll interno */
+}
+
+/* Garantir que o corpo da tabela respeite a altura fixa */
+.tableScrollShell .sapMListTblCnt {
+  min-height: calc(100% - 3rem); /* 3rem = altura aproximada do header */
+}
+
+/* Evitar quebra de layout */
+.tableScrollShell .sapMListTbl {
+  table-layout: fixed;
+  width: 100%;
+}
+
+

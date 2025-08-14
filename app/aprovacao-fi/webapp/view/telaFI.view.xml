@@ -2,123 +2,206 @@
   controllerName="telaaprovacaofi.aprovacaofi.controller.telaFI"
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
-  xmlns:core="sap.ui.core">
+  xmlns:f="sap.f"
+  xmlns:core="sap.ui.core"
+  displayBlock="true">
 
   <Page id="pageFi" showHeader="false">
-    <VBox id="vbox">
+    <VBox id="vboxPrincipal" width="100%">
 
       <!-- Cabeçalho -->
-      <Toolbar id="toolbar" class="cabecalhoTopo sapUiSmallMarginBottom">
-        <HBox id="hbox" width="100%" alignItems="Center" justifyContent="SpaceBetween">
-          <HBox id="hbox1" alignItems="Center">
-            <Image id="image"
+      <Toolbar id="toolbarCabecalho" height="3rem" class="cabecalhoTopo sapUiSmallMarginBottom">
+        <HBox id="hboxCabecalho" width="100%" alignItems="Center" justifyContent="SpaceBetween">
+          <HBox id="hboxLogo" alignItems="Center">
+            <Image
+              id="imgLogo"
               src="https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg"
-              height="2rem"
-              width="auto"
-              class="sapUiTinyMarginBegin" />
+              height="2rem" width="auto"/>
           </HBox>
-
-          <HBox id="hbox2" width="100%" justifyContent="Center">
-            <Text id="text" text="Aprovação de Ordens de Produção — Financeiro (FI)" class="cabecalhoTexto" />
+          <HBox id="hboxTitulo" width="98%" justifyContent="Center">
+            <Text id="txtTitulo" text="Aprovação de Ordens de Produção — Financeiro (FI)" class="cabecalhoTexto"/>
           </HBox>
-
-          <HBox id="hbox3" width="auto">
-            <Button id="button" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+          <HBox id="hboxBtnAtualizar">
+            <Button id="btnAtualizar" text="Atualizar" type="Ghost" icon="sap-icon://refresh" press=".onRefresh"/>
           </HBox>
         </HBox>
       </Toolbar>
 
-      <!-- Duas colunas lado a lado -->
-      <HBox id="hbox4" width="100%" renderType="Bare" class="sapUiSmallMarginBottom" justifyContent="SpaceBetween">
+      <!-- WRAPPER que centraliza -->
+      <HBox id="hboxWrapperBoard" width="100%" justifyContent="Center">
+        <!-- BOARD com 2 “cards” -->
+        <f:GridContainer id="board"
+                         snapToRow="false"
+                         class="sapUiSmallMarginBegin sapUiSmallMarginEnd">
+          <f:layout>
+            <f:GridContainerSettings id="gridSettings" columnSize="100%" gap="0.3rem"/>
+          </f:layout>
 
-        <!-- Coluna Esquerda: Aguardando aprovação -->
-        <VBox id="vbox1" width="49%">
-          <Toolbar id="toolbar1">
-            <Title id="title" text="Aguardando aprovação" level="H4"/>
-            <ToolbarSpacer id="toolbarspacer"/>
-            <Button id="button1" text="Vincular CC" icon="sap-icon://chain-link" press=".onVincularCC_Aguard"/>
-            <Button id="button2" text="Aprovar" icon="sap-icon://accept" type="Emphasized" press=".onAprovar_Aguard"/>
-            <Button id="button3" text="Negar" icon="sap-icon://decline" type="Reject" press=".onNegar_Aguard"/>
-          </Toolbar>
+          <!-- CARD 1: Aguardando aprovação -->
+          <Panel id="panelAguardando" headerText="Aguardando aprovação" class="sapUiResponsiveContentPadding">
+            <layoutData>
+              <f:GridContainerItemLayoutData id="layoutAguardando" columns="2"/>
+            </layoutData>
+            <headerToolbar>
+              <Toolbar id="toolbarAguardando">
+                <ToolbarSpacer id="spacerAguardandoEsq"/>
+                <Title id="tituloAguardando" text="Aguardando aprovação" level="H4"/>
+                <ToolbarSpacer id="spacerAguardandoDir"/>
+              </Toolbar>
+            </headerToolbar>
 
-          <Table
-            id="tableOPAguard"
-            mode="SingleSelectMaster"
-            class="tabelaComBorda"
-            growing="true"
-            items="{
-              path: '/OrdensProducao',
-              parameters: {
-                $filter: 'status eq \'aguardando_aprovacao\'',
-                $orderby: 'createdAt asc, ID asc'
-              }
-            }">
-            <columns>
-              <Column id="column"><Text id="text1" text="Produto"/></Column>
-              <Column id="column1" width="8rem"><Text id="text2" text="Qtd"/></Column>
-              <Column id="column2" width="14rem"><Text id="text3" text="Centro de Custo"/></Column>
-              <Column id="column3" width="12rem"><Text id="text4" text="Status"/></Column>
-              <Column id="column4" width="18rem"><Text id="text5" text="Motivo"/></Column>
-            </columns>
-            <items>
-              <ColumnListItem id="columnlistitem" type="Active" press=".onRowPressAguard">
-                <cells>
-                  <Text id="text6" text="{produto_nome}"/>
-                  <Text id="text7" text="{quantidade}"/>
-                  <ObjectIdentifier id="object"
-                    title="{path: 'centroCusto_ID_ID'}"
-                    text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"/>
-                  <ObjectStatus id="objectstatus" text="{status}" state="Warning"/>
-                  <Text id="text8" text="{= ${motivo} || '' }" maxLines="2"/>
-                </cells>
-              </ColumnListItem>
-            </items>
-          </Table>
-        </VBox>
+            <content>
+              <VBox id="vboxTabelaAguardando" class="tableScrollShell">
+                <Table id="tableOPAguard"
+                       mode="SingleSelectMaster"
+                       class="tabelaComBorda"
+                       sticky="ColumnHeaders,InfoToolbar"
+                       noDataText="Nenhuma ordem aguardando aprovação"
+                       autoPopinMode="true"
+                       popinLayout="GridSmall"
+                       items="{
+                         path: '/OrdensProducao',
+                         parameters: {
+                           $filter: 'status eq \'aguardando_aprovacao\'',
+                           $orderby: 'createdAt asc, ID asc'
+                         }
+                       }">
 
-        <!-- Coluna Direita: Negadas -->
-        <VBox id="vbox2"width="49%">
-          <Toolbar id="toolbar3">
-            <Title id="title1" text="Ordens Negadas" level="H4"/>
-            <ToolbarSpacer id="toolbarspacer1"/>
-            <Button id="button4" text="Rever ordem" icon="sap-icon://reset" press=".onRever_Negada"/>
-          </Toolbar>
+                  <columns>
+                    <Column id="colProdutoAguard" width="12rem" importance="High"><Text id="txtColProdutoAguard" text="Produto"/></Column>
+                    <Column id="colQtdAguard" width="6rem" hAlign="Center" importance="Medium"><Text id="txtColQtdAguard" text="Quantidade"/></Column>
+                    <Column id="colCentroCustoAguard" width="10rem" hAlign="Center" importance="Medium"><Text id="txtColCentroCustoAguard" text="Centro de Custo"/></Column>
+                    <Column id="colStatusAguard" width="12rem" hAlign="Center" importance="Medium"><Text id="txtColStatusAguard" text="Status"/></Column>
+                    <Column id="colDataAguard" importance="Low" hAlign="Center"><Text id="txtColDataAguard" text="Data de Criação"/></Column>
+                    <Column id="colVincularAguard" width="14rem" importance="Low" hAlign="Center"/>
+                    <Column id="colFuncoesAguard" width="7rem" importance="Low" hAlign="Center"><Text id="txtColFuncoesAguard" text="Funções"/></Column>
+                    <Column id="colNegarAguard" width="6rem" importance="Low" hAlign="Center"/>
+                  </columns>
 
-          <Table
-            id="tableOPNegada"
-            mode="SingleSelectMaster"
-            class="tabelaComBorda"
-            growing="true"
-            items="{
-              path: '/OrdensProducao',
-              parameters: {
-                $filter: 'status eq \'negado\'',
-                $orderby: 'modifiedAt desc, createdAt desc'
-              }
-            }">
-            <columns>
-              <Column id="column5"><Text id="text9" text="Produto"/></Column>
-              <Column id="column6" width="8rem"><Text id="text10" text="Qtd"/></Column>
-              <Column id="column7" width="14rem"><Text id="text11" text="Centro de Custo"/></Column>
-              <Column id="column8" width="12rem"><Text id="text12" text="Status"/></Column>
-              <Column id="column9" width="18rem"><Text id="text13" text="Motivo da Negação"/></Column>
-            </columns>
-            <items>
-              <ColumnListItem id="columnlistitem1" type="Active" press=".onRowPressNegada">
-                <cells>
-                  <Text id="text14" text="{produto_nome}"/>
-                  <Text id="text15" text="{quantidade}"/>
-                  <ObjectIdentifier id="object2"
-                    title="{path: 'centroCusto_ID_ID'}"
-                    text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"/>
-                  <ObjectStatus id="objectstatus2" text="{status}" state="Error"/>
-                  <Text id="text16" text="{= ${motivo} || '' }" maxLines="2"/>
-                </cells>
-              </ColumnListItem>
-            </items>
-          </Table>
-        </VBox>
+                  <items>
+                    <ColumnListItem id="itemAguard" type="Active" press=".onRowPressAguard" highlight="Warning">
+                      <cells>
+                        <ObjectIdentifier id="objProdutoAguard"
+                          title="{produto_nome}"
+                          text="{= ${produto_nome} }"
+                          class="noWrap"
+                          tooltip="{produto_nome}"/>
 
+                        <ObjectNumber id="objQtdAguard" number="{quantidade}" emphasized="true"/>
+
+                        <ObjectIdentifier id="objCentroCustoAguard"
+                          title="{path: 'centroCusto_ID_ID'}"
+                          text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"
+                          class="noWrap"
+                          tooltip="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"
+                          emptyIndicatorMode="On"/>
+
+                        <ObjectStatus id="objStatusAguard" text="{status}" state="Warning" icon="sap-icon://pending"/>
+
+                        <Text id="txtDataAguard" text="{= ${createdAt} || '' }" wrapping="false" maxLines="1"/>
+
+                        <!-- Vincular CC -->
+                        <Button id="btnVincularAguard" text="Vincular Centro de Custo" type="Ghost" icon="sap-icon://chain-link" press=".onVincularCC_Aguard">
+                          <customData>
+                            <core:CustomData id="dataVincularAguard" key="id" value="{ID}" writeToDom="false"/>
+                          </customData>
+                        </Button>
+
+                        <!-- Aprovar -->
+                        <Button id="btnAprovarAguard" text="Aprovar" icon="sap-icon://accept" type="Emphasized" press=".onAprovar_Aguard">
+                          <customData>
+                            <core:CustomData id="dataAprovarAguard" key="id" value="{ID}" writeToDom="false"/>
+                          </customData>
+                        </Button>
+
+                        <!-- Negar -->
+                        <Button id="btnNegarAguard" text="Negar" icon="sap-icon://decline" type="Reject" press=".onNegar_Aguard">
+                          <customData>
+                            <core:CustomData id="dataNegarAguard" key="id" value="{ID}" writeToDom="false"/>
+                          </customData>
+                        </Button>
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </content>
+          </Panel>
+
+          <!-- CARD 2: Ordens Negadas -->
+          <Panel id="panelNegadas" headerText="Ordens Negadas" class="sapUiResponsiveContentPadding">
+            <layoutData>
+              <f:GridContainerItemLayoutData id="layoutNegadas" columns="1"/>
+            </layoutData>
+            <headerToolbar>
+              <Toolbar id="toolbarNegadas">
+                <ToolbarSpacer id="spacerNegadasEsq"/>
+                <Title id="tituloNegadas" text="Ordens Negadas" level="H4"/>
+                <ToolbarSpacer id="spacerNegadasDir"/>
+              </Toolbar>
+            </headerToolbar>
+
+            <content>
+              <VBox id="vboxTabelaNegadas" class="tableScrollShell">
+                <Table id="tableOPNegada"
+                       mode="SingleSelectMaster"
+                       class="tabelaComBorda"
+                       sticky="ColumnHeaders,InfoToolbar"
+                       noDataText="Nenhuma ordem negada"
+                       autoPopinMode="true"
+                       popinLayout="GridSmall"
+                       items="{
+                         path: '/OrdensProducao',
+                         parameters: {
+                           $filter: 'status eq \'negado\'',
+                           $orderby: 'modifiedAt desc, createdAt desc'
+                         }
+                       }">
+
+                  <columns>
+                    <Column id="colProdutoNegada" importance="High"><Text id="txtColProdutoNegada" text="Produto"/></Column>
+                    <Column id="colQtdNegada" width="6rem" hAlign="Center" importance="Medium"><Text id="txtColQtdNegada" text="Quantidade"/></Column>
+                    <Column id="colCentroCustoNegada" width="14rem" hAlign="Center" importance="Medium"><Text id="txtColCentroCustoNegada" text="Centro de Custo"/></Column>
+                    <Column id="colStatusNegada" width="10rem" hAlign="Center" importance="Medium"><Text id="txtColStatusNegada" text="Status"/></Column>
+                    <Column id="colMotivoNegada" importance="Low" hAlign="Center"><Text id="txtColMotivoNegada" text="Motivo da Negação"/></Column>
+                    <Column id="colRevisaoNegada" width="10rem" hAlign="Center" importance="Medium"><Text id="txtColRevisaoNegada" text="Revisão"/></Column>
+                  </columns>
+
+                  <items>
+                    <ColumnListItem id="itemNegada" type="Active" press=".onRowPressNegada" highlight="Error">
+                      <cells>
+                        <ObjectIdentifier id="objProdutoNegada"
+                          title="{produto_nome}"
+                          text="{= ${produto_nome} }"
+                          class="noWrap"
+                          tooltip="{produto_nome}"/>
+
+                        <ObjectNumber id="objQtdNegada" number="{quantidade}" emphasized="true"/>
+
+                        <ObjectIdentifier id="objCentroCustoNegada"
+                          title="{path: 'centroCusto_ID_ID'}"
+                          text="{= ${centroCusto_ID_ID} ? ${centroCusto_ID_ID} : '— não vinculado —' }"
+                          emptyIndicatorMode="On"/>
+
+                        <ObjectStatus id="objStatusNegada" text="{status}" state="Error" icon="sap-icon://status-negative"/>
+
+                        <Text id="txtMotivoNegada" text="{= ${motivo} || '' }" wrapping="false" maxLines="1" tooltip="{motivo}"/>
+
+                        <!-- Rever Ordem -->
+                        <Button id="btnReverNegada" text="Rever Ordem" press=".onRever_Negada">
+                          <customData>
+                            <core:CustomData id="dataReverNegada" key="id" value="{ID}" writeToDom="false"/>
+                          </customData>
+                        </Button>
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </content>
+          </Panel>
+
+        </f:GridContainer>
       </HBox>
 
     </VBox>
