@@ -8,10 +8,10 @@ module.exports = async function (req) {
   }
 
   const tx = cds.transaction(req);
-  const [op] = await tx.run(
+  const [ordemProducao] = await tx.run(
     SELECT.from('my.modulomm.OrdemProducao').where({ ID: ordemProducao_ID })
   );
-  if (!op) return req.error(404, 'Ordem não encontrada.');
+  if (!ordemProducao) return req.error(404, 'Ordem não encontrada.');
 
   if (!aprovado) {
     await tx.run(
@@ -24,37 +24,37 @@ module.exports = async function (req) {
   }
 
   // 🔒 (somente para APROVAR) Centro de Custo deve existir e estar aprovado
-  if (!op.centroCusto_ID_ID) {
+  if (!ordemProducao.centroCusto_ID_ID) {
     return req.error(400, 'Ordem sem centro de custo vinculado.');
   }
-  const [cc] = await tx.run(
-    SELECT.from('my.modulomm.CentroCusto').where({ ID: op.centroCusto_ID_ID })
+  const [centroCusto] = await tx.run(
+    SELECT.from('my.modulomm.CentroCusto').where({ ID: ordemProducao.centroCusto_ID_ID })
   );
-  if (!cc) return req.error(400, 'Centro de Custo inexistente.');
-  if (!cc.aprovado) return req.error(400, 'Centro de Custo não aprovado.');
+  if (!centroCusto) return req.error(400, 'Centro de Custo inexistente.');
+  if (!centroCusto.aprovado) return req.error(400, 'Centro de Custo não aprovado.');
 
   // ✅ 1) Confirma MP suficiente agora (BOM * quantidade da OP)
   const componentes = await tx.run(
-    SELECT.from('my.modulomm.ComposicaoProduto').where({ produto_ID_ID: op.produto_ID_ID })
+    SELECT.from('my.modulomm.ComposicaoProduto').where({ produto_ID_ID: ordemProducao.produto_ID_ID })
   );
-  for (const comp of componentes) {
-    const { materiaPrima_ID_ID, quantidade: qtdPorUnidade } = comp;
-    const qtdTotal = qtdPorUnidade * op.quantidade;
+  for (const composicao of componentes) {
+    const { materiaPrima_ID_ID, quantidade: qtdPorUnidade } = composicao;
+    const qtdTotal = qtdPorUnidade * ordemProducao.quantidade;
 
-    const [est] = await tx.run(
+    const [estoqueMP] = await tx.run(
       SELECT.from('my.modulomm.EstoqueMateriaPrima').where({ materiaPrima_ID_ID })
     );
-    const disp = est?.quantidade || 0;
+    const disp = estoqueMP?.quantidade || 0;
     if (disp < qtdTotal) {
       return req.error(400, 'Matéria-prima ainda não disponível. OP permanece aguardando.');
     }
   }
 
   // ✅ 2) Capacidade e duração
-  const cap = await getVazaoTotal(tx, op.produto_ID_ID);
-  if (!cap.ok) return req.error(400, cap.reason || 'Capacidade indisponível.');
+  const capacidade = await getVazaoTotal(tx, ordemProducao.produto_ID_ID);
+  if (!capacidade.ok) return req.error(400, capacidade.reason || 'Capacidade indisponível.');
 
-  const duracaoMin = minutosDaOrdem(op.quantidade, cap.vazao);
+  const duracaoMin = minutosDaOrdem(ordemProducao.quantidade, capacidade.vazao);
   const inicio = await proximoSlotNaFila(tx);
   const fim = new Date(inicio.getTime() + duracaoMin * 60_000);
 

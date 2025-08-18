@@ -9,14 +9,14 @@ module.exports = async function (req) {
   const tx = cds.transaction(req);
 
   // 🔍 Busca RC
-  const [rc] = await tx.run(
+  const [RequisicaoCompra] = await tx.run(
     SELECT.from('my.modulomm.RequisicaoCompra').where({ ID: requisicao_ID })
   );
-  if (!rc) return req.error(404, 'Requisição não encontrada.');
+  if (!RequisicaoCompra) return req.error(404, 'Requisição não encontrada.');
 
   // 🔒 Bloqueia aprovação se status não for pendente/aguardando_aprovacao
-  if (!['aguardando_aprovacao', 'pendente'].includes(rc.status)) {
-    return req.error(400, `Status atual ${rc.status} não permite aprovação.`);
+  if (!['aguardando_aprovacao', 'pendente'].includes(RequisicaoCompra.status)) {
+    return req.error(400, `Status atual ${RequisicaoCompra.status} não permite aprovação.`);
   }
 
   if (!aprovado) {
@@ -30,20 +30,20 @@ module.exports = async function (req) {
   }
 
   // ✅ Aprovar + dar entrada no estoque (upsert)
-  const mpID = rc.materiaPrima_ID_ID;
-  const qtd = rc.quantidade;
+  const MateriaPrimaID = RequisicaoCompra.materiaPrima_ID_ID;
+  const Quantidade = RequisicaoCompra.quantidade;
 
   const linhas = await tx.run(
     UPDATE('my.modulomm.EstoqueMateriaPrima')
-      .set({ quantidade: { '+=': qtd } })
-      .where({ materiaPrima_ID_ID: mpID })
+      .set({ quantidade: { '+=': Quantidade } })
+      .where({ materiaPrima_ID_ID: MateriaPrimaID })
   );
 
   if (linhas === 0) {
     await tx.run(
       INSERT.into('my.modulomm.EstoqueMateriaPrima').entries({
-        materiaPrima_ID_ID: mpID,
-        quantidade: qtd
+        materiaPrima_ID_ID: MateriaPrimaID,
+        quantidade: Quantidade
       })
     );
   }
@@ -54,6 +54,6 @@ module.exports = async function (req) {
       .where({ ID: requisicao_ID })
   );
 
-  req.info(200, `Compra aprovada. MP ${mpID} +${qtd} un.`);
+  req.info(200, `Compra aprovada. MP ${MateriaPrimaID} +${Quantidade} un.`);
   return true;
 };

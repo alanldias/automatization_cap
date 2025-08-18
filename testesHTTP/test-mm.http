@@ -37,7 +37,7 @@ Content-Type: application/json
 ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ### Vincular a OP ao Centro de Custo NÃO aprovado (deve falhar na aprovação)
-PATCH http://localhost:4004/odata/v4/mm/OrdensProducao(360e38a7-e9ab-4da5-be0a-18f1878cf04d)
+PATCH http://localhost:4004/odata/v4/mm/OrdensProducao(3d5ea510-06f4-45df-96ab-78f0002880d5)
 Content-Type: application/json
 
 {
