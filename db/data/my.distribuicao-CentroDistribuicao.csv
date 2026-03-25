@@ -1,7 +1,9 @@
-ID,nome,cidade,estado,endereco,capacidadeMaxima
-"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d","CD São Paulo","São Paulo","SP","Rua das Entregas Rápidas, 123, Bairro Logístico",15000
+ID,nome,cidade,estado,endereco,capacidadeMaxima,lat,lon
+"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d","CD São Paulo","São Paulo","SP","Avenida Paulista, 1578, Bela Vista",15000,-23.5614148,-46.6558817
 "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e","CD Rio de Janeiro","Duque de Caxias","RJ","Avenida Brasil, 4567, Campos Elíseos",12500
-"c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f","CD Curitiba","São José dos Pinhais","PR","Rodovia BR-376, Km 620, Colônia Rio Grande",20000
+"c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f","CD Curitiba","São José dos Pinhais","PR","Rodovia BR-376, Km 620, Colônia Rio Grande",20000,-25.5386434,-49.1948986
 "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8g","CD Salvador","Camaçari","BA","Via Parafuso, s/n, Polo Industrial",10000
 "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8g9h","CD Manaus","Manaus","AM","Avenida Torquato Tapajós, 789, Distrito Industrial",8500
 "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8g9h0i","CD Belo Horizonte","Contagem","MG","Via Expressa de Contagem, 1010, Bairro Industrial",13000
+"f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8g9h0c","CD Recife","Recife","PE","Rua Coelho Leite, 1010, Santo Amaro",13000,-8.0519542,-34.8816268
+

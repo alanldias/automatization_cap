@@ -98,12 +98,28 @@
           "target": [
             "TargetViewEnvioPedido"
           ]
+        },
+        {
+          "name": "RouteViewConsultarEntregaComCodigo",
+          "pattern": "consultar-entrega/{codigo}",
+          "target": [
+            "TargetViewConsultarEntrega"
+          ]
+        },
+        {
+          "name": "RouteViewConsultarEntrega",
+          "pattern": "consultar-entrega",
+          "target": ["TargetViewConsultarEntrega"]
         }
       ],
       "targets": {
         "TargetViewEnvioPedido": {
           "id": "ViewEnvioPedido",
           "name": "ViewEnvioPedido"
+        },
+        "TargetViewConsultarEntrega": {
+          "id": "ViewConsultarEntrega",
+          "name": "ViewConsultarEntrega"
         }
       }
     },

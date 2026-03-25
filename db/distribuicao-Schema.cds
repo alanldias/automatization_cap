@@ -5,6 +5,10 @@ using {
     managed
 } from '@sap/cds/common';
 
+type Polyline : LargeString;
+type Json     : LargeString;
+
+
 entity Entrega : cuid, managed {
     pedidoID          : UUID;
     clienteNome       : String;
@@ -13,25 +17,23 @@ entity Entrega : cuid, managed {
     estadoDestino     : String;
     enderecoCompleto  : String;
     distanciaKm       : Integer;
+    rotaGeometry      : Polyline;
     transportadora    : String;
-    rastreio          : String;
-    horarioEntrega    : String enum {
-        Manha;
-        Tarde;
-        Noite
-    };
-    statusEntrega     : String enum {
-        Criada;
-        Coletado;
-        EmTransito;
-        SaiuParaEntrega;
-        Entregue;
-        Falhou
+    rastreio          : String; //  já serve de “código da entrega”
+    horarioEntrega    : String;
+     statusEntrega : String enum {
+      CRIADA;
+      COLETADO;
+      EM_TRANSITO;
+      SAIU_PARA_ENTREGA;
+      ENTREGUE;
+      FALHOU
     };
     comprovanteGerado : Boolean default false;
     dataEnvio         : Date;
-    veiculo    : Association to Veiculo;
-    centroDist : Association to CentroDistribuicao;
+    veiculo           : Association to Veiculo;
+    centroDistribuicao: Association to CentroDistribuicao;
+    etapasRota         : Json;
 }
 
 entity CentroDistribuicao : cuid {
@@ -40,7 +42,10 @@ entity CentroDistribuicao : cuid {
     estado           : String;
     endereco         : String;
     capacidadeMaxima : Integer;
-    veiculos         : Association to many Veiculo on veiculos.centro = $self;
+    lat              : Decimal(9, 6); // ← latitude
+    lon              : Decimal(9, 6); // ← longitude
+    veiculos         : Association to many Veiculo
+                           on veiculos.centro = $self;
 }
 
 entity Veiculo : cuid, managed {
@@ -48,8 +53,11 @@ entity Veiculo : cuid, managed {
     placa      : String;
     capacidade : Integer;
     emUso      : Boolean default false;
-    status     : String enum { Disponivel; EmRota; Manutencao };
+    status     : String enum {
+        Disponivel;
+        EmRota;
+        Manutencao
+    };
 
     centro     : Association to CentroDistribuicao;
 }
-

@@ -4,7 +4,7 @@
     "generatorPlatform": "SAP Business Application Studio",
     "serviceType": "Local CAP",
     "metadataFilename": "",
-    "serviceUrl": "http://localhost:4004/odata/v4/catalog/",
+    "serviceUrl": "http://localhost:4004/odata/v4/distribuicaoServico/",
     "appName": "distribuicao",
     "appTitle": "Distribuicao e envio de produtos",
     "appDescription": "An SAP Fiori application.",
