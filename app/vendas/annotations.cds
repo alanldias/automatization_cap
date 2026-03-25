@@ -1,0 +1,1 @@
+using VendasService as service from '../../srv/vendas/vendas-service';
